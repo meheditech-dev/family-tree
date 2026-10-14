@@ -64,7 +64,7 @@ export function TreeCanvas({ containerRef }: { containerRef: React.RefObject<HTM
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.current.size === 2) {
-      const [a, b] = [...pointers.current.values()];
+      const [a, b] = [...pointers.current.values()] as [{ x: number; y: number }, { x: number; y: number }];
       pinch.current = { d: Math.hypot(a.x - b.x, a.y - b.y), z: getState().settings.zoom };
     }
   };
@@ -73,7 +73,7 @@ export function TreeCanvas({ containerRef }: { containerRef: React.RefObject<HTM
     if (!prev) return;
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.current.size === 2 && pinch.current) {
-      const [a, b] = [...pointers.current.values()];
+      const [a, b] = [...pointers.current.values()] as [{ x: number; y: number }, { x: number; y: number }];
       const el = containerRef.current!;
       const r = el.getBoundingClientRect();
       const z = getState().settings.zoom;

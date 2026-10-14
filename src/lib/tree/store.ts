@@ -5,15 +5,15 @@ import { makeSeed } from "./seed";
 const KEY = "treemind_v1";
 
 export interface UI {
-  selectedId?: string;
+  selectedId?: string | undefined;
   search: string;
   genFilter: number; // 0 = all
   panelOpen: boolean;
   sidebarOpen: boolean;
-  detailsId?: string;
-  modal?: { mode: "add" | "edit"; id?: string; relation?: "root" | "child" | "spouse"; relatedTo?: string };
-  center?: { id: string; n: number };
-  warning?: string;
+  detailsId?: string | undefined;
+  modal?: { mode: "add" | "edit" | undefined; id?: string; relation?: "root" | "child" | "spouse"; relatedTo?: string };
+  center?: { id: string | undefined; n: number };
+  warning?: string | undefined;
 }
 
 export interface State {
