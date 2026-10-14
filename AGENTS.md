@@ -8,3 +8,8 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+## Architecture
+- Family tree state lives in `src/lib/tree/store.ts` (useSyncExternalStore + localStorage key `treemind_v1`); no backend, so persistence stays client-only.
+- Tree positioning is the pure `layoutTree` in `src/lib/tree/layout.ts`; keep it React-free so it stays unit-testable.
+- UI strings go through `useT()` in `src/lib/tree/i18n.ts` (BN/EN pairs); never hardcode user-facing text.
