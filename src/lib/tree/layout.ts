@@ -89,7 +89,7 @@ export function layoutTree(members: Member[], o: LayoutOpts): Layout {
       cursor++;
     } else {
       const ys = kids.map(place);
-      y = (ys[0] + ys[ys.length - 1]) / 2;
+      y = (ys[0]! + ys[ys.length - 1]!) / 2;
     }
     const x = (g - 1) * colStep;
     pos.set(id, { id, x, y, gen: g });

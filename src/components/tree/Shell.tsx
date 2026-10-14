@@ -21,8 +21,8 @@ export function Shell({ children }: { children: ReactNode }) {
   useEffect(() => {
     const r = document.documentElement;
     r.classList.toggle("dark", settings.theme === "dark");
-    r.style.setProperty("--primary", ACCENTS[settings.accentColor] ?? ACCENTS.teal);
-    r.style.setProperty("--ring", ACCENTS[settings.accentColor] ?? ACCENTS.teal);
+    r.style.setProperty("--primary", ACCENTS[settings.accentColor] ?? ACCENTS["teal"]!);
+    r.style.setProperty("--ring", ACCENTS[settings.accentColor] ?? ACCENTS["teal"]!);
     r.lang = settings.language;
   }, [settings.theme, settings.accentColor, settings.language]);
 

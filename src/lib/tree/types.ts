@@ -4,15 +4,15 @@ export interface Member {
   id: string;
   name: string;
   gender: Gender;
-  birthYear?: number;
-  deathYear?: number;
-  photo?: string;
-  role?: string;
-  parentId?: string;
-  spouseId?: string;
-  notes?: string;
-  phone?: string;
-  address?: string;
+  birthYear?: number | undefined;
+  deathYear?: number | undefined;
+  photo?: string | undefined;
+  role?: string | undefined;
+  parentId?: string | undefined;
+  spouseId?: string | undefined;
+  notes?: string | undefined;
+  phone?: string | undefined;
+  address?: string | undefined;
 }
 
 export type Lang = "bn" | "en";

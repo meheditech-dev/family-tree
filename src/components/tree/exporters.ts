@@ -14,7 +14,7 @@ export async function exportPng() {
   if (!el) return;
   const { toPng } = await import("html-to-image");
   const bg = getComputedStyle(document.documentElement).getPropertyValue("--canvas");
-  const url = await toPng(el, { backgroundColor: bg || undefined, pixelRatio: 2, style: { transform: "none" } });
+  const url = await toPng(el, { ...(bg ? { backgroundColor: bg } : {}), pixelRatio: 2, style: { transform: "none" } });
   download("treemind-tree.png", url);
 }
 

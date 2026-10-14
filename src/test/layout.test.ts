@@ -18,7 +18,7 @@ describe("layoutTree", () => {
     expect(keys.size).toBe(l.nodes.length);
     const m3 = l.nodes.find((n) => n.id === "m3")!;
     const kids = l.nodes.filter((n) => ["m7", "m9"].includes(n.id)).map((n) => n.y);
-    expect(m3.y).toBe((kids[0] + kids[1]) / 2);
+    expect(m3.y).toBe((kids[0]! + kids[1]!) / 2);
     expect(l.edges.length).toBe(8);
   });
 });
