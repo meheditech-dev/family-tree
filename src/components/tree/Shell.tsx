@@ -2,7 +2,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Leaf, Home, Network, Users, HeartHandshake, UsersRound, Settings, Download, DatabaseBackup,
-  LifeBuoy, ShieldCheck, LogOut, Search, Sun, Moon, Menu, X, ChevronDown, AlertTriangle,
+  LifeBuoy, ShieldCheck, LogOut, Search, Sun, Moon, Menu, X, AlertTriangle,
 } from "lucide-react";
 import { ACCENTS } from "@/lib/tree/types";
 import { getState, hydrate, setSettings, setUI, useStore } from "@/lib/tree/store";
@@ -21,8 +21,8 @@ export function Shell({ children }: { children: ReactNode }) {
   useEffect(() => {
     const r = document.documentElement;
     r.classList.toggle("dark", settings.theme === "dark");
-    r.style.setProperty("--primary", ACCENTS[settings.accentColor] ?? ACCENTS["teal"]!);
-    r.style.setProperty("--ring", ACCENTS[settings.accentColor] ?? ACCENTS["teal"]!);
+    const accent = ACCENTS[settings.accentColor] ?? ACCENTS["teal"];
+    if (accent) { r.style.setProperty("--primary", accent); r.style.setProperty("--ring", accent); }
     r.lang = settings.language;
   }, [settings.theme, settings.accentColor, settings.language]);
 
@@ -144,11 +144,6 @@ function Topbar() {
         />
       </div>
       <div className="flex items-center gap-1 md:gap-3">
-        <button className="hidden items-center gap-2 rounded-full py-1 pl-1 pr-2 hover:bg-muted md:flex">
-          <span className="grid size-8 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground">ম</span>
-          <span className="text-sm font-medium">{t("user")}</span>
-          <ChevronDown className="size-4 text-muted-foreground" />
-        </button>
         <button className="hidden text-sm text-muted-foreground hover:text-foreground xl:block" onClick={() => setUI({ panelOpen: true })}>{t("settings")}</button>
         <button className="hidden text-sm text-muted-foreground hover:text-foreground xl:block">{t("support")}</button>
         <button
