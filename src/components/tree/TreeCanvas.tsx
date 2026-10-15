@@ -119,6 +119,8 @@ export function TreeCanvas({ containerRef }: { containerRef: React.RefObject<HTM
     >
       <div
         id="tree-content"
+        data-tree-width={layout.width}
+        data-tree-height={layout.height}
         className="absolute left-0 top-0 origin-top-left"
         style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, width: layout.width + 40, height: layout.height + 40 }}
       >

@@ -174,5 +174,16 @@
   .no-print { display: none !important; }
 }
 
+.tree-export-surface {
+  position: fixed;
+  left: -100000px;
+  top: 0;
+  overflow: hidden;
+  background: var(--canvas);
+  color: var(--foreground);
+}
+
+.tree-export-surface *, .tree-export-surface { transition: none !important; }
+
 @layer base {
 }

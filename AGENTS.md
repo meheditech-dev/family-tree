@@ -15,3 +15,4 @@
 - UI strings go through `useT()` in `src/lib/tree/i18n.ts` (BN/EN pairs); never hardcode user-facing text.
 - Layout reserves descendant subtree widths before placing couples above children to prevent overlapping branches.
 - Relationship labels use `relationKey` with the selected member as reference so all tree cards share one perspective.
+- Exports capture a detached full-tree copy with neutral visibility and safe raster sizing; large PDFs include an overview and overlapping detail sheets to avoid viewport clipping and preserve readability.

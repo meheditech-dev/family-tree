@@ -1,3 +1,6 @@
 - [x] Display generations vertically, with couples side by side.
 - [x] Update relationship labels relative to the clicked person.
 - [x] Verify layout, relationships, and the live tree.
+- [ ] Export the complete tree as PNG, JPG and PDF with margins, independent of zoom and filters.
+- [ ] Check popup spacing and remove the top-bar personal name.
+- [ ] Verify an eight-generation tree and downloaded files.
