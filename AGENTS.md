@@ -13,3 +13,5 @@
 - Family tree state lives in `src/lib/tree/store.ts` (useSyncExternalStore + localStorage key `treemind_v1`); no backend, so persistence stays client-only.
 - Tree positioning is the pure `layoutTree` in `src/lib/tree/layout.ts`; keep it React-free so it stays unit-testable.
 - UI strings go through `useT()` in `src/lib/tree/i18n.ts` (BN/EN pairs); never hardcode user-facing text.
+- Layout reserves descendant subtree widths before placing couples above children to prevent overlapping branches.
+- Relationship labels use `relationKey` with the selected member as reference so all tree cards share one perspective.

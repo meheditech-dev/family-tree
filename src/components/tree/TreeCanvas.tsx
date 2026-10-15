@@ -74,7 +74,8 @@ export function TreeCanvas({ containerRef }: { containerRef: React.RefObject<HTM
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.current.size === 2 && pinch.current) {
       const [a, b] = [...pointers.current.values()] as [{ x: number; y: number }, { x: number; y: number }];
-      const el = containerRef.current!;
+       const el = containerRef.current;
+       if (!el) return;
       const r = el.getBoundingClientRect();
       const z = getState().settings.zoom;
       const next = clamp(pinch.current.z * (Math.hypot(a.x - b.x, a.y - b.y) / pinch.current.d), ZMIN, ZMAX);
@@ -115,12 +116,13 @@ export function TreeCanvas({ containerRef }: { containerRef: React.RefObject<HTM
           {layout.edges.map((e) => (
             <g key={e.childId} opacity={dimOf(e.childId) ? 0.2 : 1}>
               <path d={edgePath(e, settings.lineStyle)} fill="none" stroke="var(--primary)" strokeWidth={2} />
-              <circle cx={e.jx} cy={e.from.y} r={3.5} fill="var(--primary)" />
+               <circle cx={e.from.x} cy={e.from.y} r={3.5} fill="var(--primary)" />
             </g>
           ))}
         </svg>
         {layout.nodes.map((n) => {
-          const m = byId.get(n.id)!;
+           const m = byId.get(n.id);
+           if (!m) return null;
           return (
             <MemberCard
               key={n.id}
@@ -131,7 +133,7 @@ export function TreeCanvas({ containerRef }: { containerRef: React.RefObject<HTM
               h={cardH}
               gen={n.gen}
               photo={settings.photoSize}
-              rel={relationKey(m, analysis)}
+               rel={relationKey(m, analysis, ui.selectedId)}
               dim={dimOf(n.id)}
               selected={ui.selectedId === n.id}
               match={!!q && m.name.toLowerCase().includes(q)}

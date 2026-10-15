@@ -9,19 +9,21 @@ export function DetailsDrawer() {
   const t = useT();
   const id = useStore((s) => s.ui.detailsId);
   const members = useStore((s) => s.members);
+  const selectedId = useStore((s) => s.ui.selectedId);
   const a = useMemo(() => analyze(members), [members]);
   if (!id) return null;
   const m = a.byId.get(id);
   if (!m) return null;
   const pid = a.primaryOf(id);
-  const pm = a.byId.get(pid)!;
+   const pm = a.byId.get(pid);
+   if (!pm) return null;
   const parentP = pm.parentId ? a.primaryOf(pm.parentId) : undefined;
   const isSec = a.secondary.has(id);
   const parents = !isSec && parentP ? [parentP, a.byId.get(parentP)?.spouseId].filter(Boolean) as string[] : [];
   const kids = a.children.get(pid) ?? [];
   const sibs = !isSec && parentP ? (a.children.get(parentP) ?? []).filter((x) => x !== id) : [];
   const name = (x: string) => a.byId.get(x)?.name;
-  const rk = relationKey(m, a);
+   const rk = relationKey(m, a, selectedId);
   const Row = ({ label, ids }: { label: string; ids: string[] }) => (
     <div>
       <div className="mb-1 text-xs font-medium text-muted-foreground">{label}</div>
