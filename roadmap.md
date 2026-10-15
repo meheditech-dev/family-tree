@@ -1,0 +1,3 @@
+- [ ] Display generations vertically, with couples side by side.
+- [ ] Update relationship labels relative to the clicked person.
+- [ ] Verify layout, relationships, and the live tree.

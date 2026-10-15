@@ -18,7 +18,7 @@ export function analyze(members: Member[]): Analysis {
     const sp = m.spouseId ? byId.get(m.spouseId) : undefined;
     if (!sp || (m.parentId && byId.has(m.parentId))) continue;
     const spHasParent = !!(sp.parentId && byId.has(sp.parentId));
-    if (spHasParent || index.get(sp.id)! < index.get(m.id)!) secondary.add(m.id);
+    if (spHasParent || (index.get(sp.id) ?? 0) < (index.get(m.id) ?? 0)) secondary.add(m.id);
   }
   const primaryOf = (id: string) => {
     const m = byId.get(id);
@@ -30,8 +30,9 @@ export function analyze(members: Member[]): Analysis {
     if (secondary.has(m.id)) continue;
     if (m.parentId && byId.has(m.parentId)) {
       const p = primaryOf(m.parentId);
-      if (!children.has(p)) children.set(p, []);
-      children.get(p)!.push(m.id);
+      const siblings = children.get(p) ?? [];
+      siblings.push(m.id);
+      children.set(p, siblings);
     } else roots.push(m.id);
   }
   const gen = new Map<string, number>();
@@ -62,7 +63,7 @@ export interface NodePos {
 export interface Edge {
   from: { x: number; y: number };
   to: { x: number; y: number };
-  jx: number;
+  jy: number;
   childId: string;
 }
 export interface Layout {
@@ -73,45 +74,59 @@ export interface Layout {
   height: number;
 }
 
-/** Pure left-to-right layout: couples side by side, children in the next column. */
+/** Pure top-to-bottom layout: center each couple above its descendant branches. */
 export function layoutTree(members: Member[], o: LayoutOpts): Layout {
   const a = analyze(members);
-  const colStep = o.cardW * 2 + o.spouseGap + o.gapX;
-  const rowH = o.cardH + o.gapY;
+  const rowH = o.cardH + Math.max(o.gapY, 72);
   const pos = new Map<string, NodePos>();
+  const widths = new Map<string, number>();
+  const coupleWidth = (id: string) => {
+    const sp = a.byId.get(id)?.spouseId;
+    return sp && a.secondary.has(sp) ? o.cardW * 2 + o.spouseGap : o.cardW;
+  };
+  const measure = (id: string): number => {
+    const kids = a.children.get(id) ?? [];
+    const childWidth = kids.reduce((sum, child) => sum + measure(child), 0) + Math.max(0, kids.length - 1) * o.gapX;
+    const width = Math.max(coupleWidth(id), childWidth);
+    widths.set(id, width);
+    return width;
+  };
+  a.roots.forEach(measure);
   let cursor = 0;
-  const place = (id: string): number => {
+  const place = (id: string, left: number) => {
     const g = a.gen.get(id) ?? 1;
     const kids = a.children.get(id) ?? [];
-    let y: number;
-    if (!kids.length) {
-      y = cursor * rowH;
-      cursor++;
-    } else {
-      const ys = kids.map(place);
-      y = (ys[0]! + ys[ys.length - 1]!) / 2;
-    }
-    const x = (g - 1) * colStep;
+    const width = widths.get(id) ?? coupleWidth(id);
+    const x = left + (width - coupleWidth(id)) / 2;
+    const y = (g - 1) * rowH;
     pos.set(id, { id, x, y, gen: g });
     const sp = a.byId.get(id)?.spouseId;
     if (sp && a.secondary.has(sp)) pos.set(sp, { id: sp, x: x + o.cardW + o.spouseGap, y, gen: g });
-    return y;
+    const childWidth = kids.reduce((sum, child) => sum + (widths.get(child) ?? 0), 0) + Math.max(0, kids.length - 1) * o.gapX;
+    let childLeft = left + (width - childWidth) / 2;
+    for (const child of kids) {
+      place(child, childLeft);
+      childLeft += (widths.get(child) ?? 0) + o.gapX;
+    }
   };
-  a.roots.forEach((r, i) => {
-    if (i > 0) cursor += 0.5;
-    place(r);
+  a.roots.forEach((r) => {
+    place(r, cursor);
+    cursor += (widths.get(r) ?? 0) + o.gapX;
   });
   const edges: Edge[] = [];
   const spouseLinks: Layout["spouseLinks"] = [];
   for (const [pid, kids] of a.children) {
-    const p = pos.get(pid)!;
+    const p = pos.get(pid);
+    if (!p) continue;
     const sp = a.byId.get(pid)?.spouseId;
     const hasSp = !!(sp && a.secondary.has(sp));
-    const fx = p.x + (hasSp ? o.cardW * 2 + o.spouseGap : o.cardW);
-    const from = { x: fx, y: p.y + o.cardH / 2 };
+    const fx = p.x + (hasSp ? o.cardW + o.spouseGap / 2 : o.cardW / 2);
+    const from = { x: fx, y: p.y + o.cardH };
     for (const k of kids) {
-      const c = pos.get(k)!;
-      edges.push({ from, to: { x: c.x, y: c.y + o.cardH / 2 }, jx: fx + o.gapX / 2, childId: k });
+      const c = pos.get(k);
+      if (!c) continue;
+      const to = { x: c.x + o.cardW / 2, y: c.y };
+      edges.push({ from, to, jy: (from.y + to.y) / 2, childId: k });
     }
   }
   for (const p of pos.values()) {
@@ -126,8 +141,7 @@ export function layoutTree(members: Member[], o: LayoutOpts): Layout {
 }
 
 export function edgePath(e: Edge, style: "straight" | "curved") {
-  const { from, to, jx } = e;
-  if (style === "straight") return `M${from.x},${from.y} H${jx} V${to.y} H${to.x}`;
-  const mx = (jx + to.x) / 2;
-  return `M${from.x},${from.y} H${jx} C${mx},${from.y} ${mx},${to.y} ${to.x},${to.y}`;
+  const { from, to, jy } = e;
+  if (style === "straight") return `M${from.x},${from.y} V${jy} H${to.x} V${to.y}`;
+  return `M${from.x},${from.y} C${from.x},${jy} ${to.x},${jy} ${to.x},${to.y}`;
 }
