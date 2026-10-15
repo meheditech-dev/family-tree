@@ -31,8 +31,14 @@ export const MemberCard = memo(function MemberCard({ m, x, y, w, h, gen, photo, 
       tabIndex={0}
       aria-label={m.name}
       onClick={() => setUI({ selectedId: m.id })}
-      onDoubleClick={() => setUI({ detailsId: m.id })}
-      onKeyDown={(e) => e.key === "Enter" && setUI({ detailsId: m.id })}
+       onDoubleClick={() => setUI({ selectedId: m.id, detailsId: m.id })}
+       onKeyDown={(e) => {
+         if (e.target !== e.currentTarget) return;
+         if (e.key === "Enter" || e.key === " ") {
+           e.preventDefault();
+           setUI({ selectedId: m.id, ...(e.key === "Enter" ? { detailsId: m.id } : {}) });
+         }
+       }}
       style={{ left: x, top: y, width: w, height: h, opacity: dim ? 0.25 : 1 }}
       className={`absolute flex items-center gap-3 rounded-xl border-[1.5px] bg-card px-3 shadow-[var(--shadow-card)] outline-none focus-visible:ring-2 focus-visible:ring-ring ${
         dead ? "border-deceased/60 grayscale" : "border-primary"
@@ -49,7 +55,7 @@ export const MemberCard = memo(function MemberCard({ m, x, y, w, h, gen, photo, 
           <span className={`truncate py-0.5 text-sm font-bold ${dead ? "text-muted-foreground" : ""}`}>{m.name}</span>
           <span className={`size-2 shrink-0 rounded-full ${dead ? "bg-deceased" : m.gender === "male" ? "bg-male" : "bg-female"}`} />
         </div>
-        <div className="truncate text-xs font-medium text-relation">{rel ? t(rel) : m.role}</div>
+         <div title={rel ? t(rel) : m.role} className="truncate text-xs font-medium text-relation">{rel ? t(rel) : m.role}</div>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <span className="size-2 rounded-full" style={{ background: genVar(gen) }} />
           {m.birthYear ?? "?"} - {m.deathYear ?? t("present")}
