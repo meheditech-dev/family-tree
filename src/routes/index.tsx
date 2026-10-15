@@ -13,6 +13,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Build and explore your family tree in Bangla or English with TreeMind." },
       { property: "og:title", content: "TreeMind — বংশবৃক্ষ" },
       { property: "og:description", content: "Build and explore your family tree in Bangla or English with TreeMind." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: TreePage,

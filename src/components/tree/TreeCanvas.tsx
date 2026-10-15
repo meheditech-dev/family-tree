@@ -25,6 +25,19 @@ export function TreeCanvas({ containerRef }: { containerRef: React.RefObject<HTM
   const posById = useMemo(() => new Map(layout.nodes.map((n) => [n.id, n])), [layout]);
   const byId = analysis.byId;
   const zoom = settings.zoom;
+  const framed = useRef(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    const root = layout.nodes.find((n) => n.id === analysis.roots[0]);
+    if (!el || !root || framed.current || ui.center) return;
+    framed.current = true;
+    const z = clamp(Math.min((el.clientWidth - 48) / layout.width, (el.clientHeight - 60) / layout.height, getState().settings.zoom), ZMIN, ZMAX);
+    const spouse = byId.get(root.id)?.spouseId;
+    const coupleW = spouse && analysis.secondary.has(spouse) ? cardW * 2 + opts.spouseGap : cardW;
+    setSettings({ zoom: z });
+    setPan({ x: el.clientWidth / 2 - (root.x + coupleW / 2) * z, y: 24 });
+  }, [layout, analysis, byId, cardW, opts.spouseGap, containerRef, ui.center]);
 
   // center on request
   useEffect(() => {

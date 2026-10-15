@@ -13,6 +13,8 @@ export const Route = createFileRoute("/members")({
       { name: "description", content: "Sortable list of every member in your TreeMind family tree." },
       { property: "og:title", content: "সদস্য তালিকা — TreeMind" },
       { property: "og:description", content: "Sortable list of every member in your TreeMind family tree." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: MembersPage,
@@ -25,6 +27,7 @@ function MembersPage() {
   const t = useT();
   const nav = useNavigate();
   const members = useStore((s) => s.members);
+  const selectedId = useStore((s) => s.ui.selectedId);
   const a = useMemo(() => analyze(members), [members]);
   const [sort, setSort] = useState<{ k: Key; dir: 1 | -1 }>({ k: "gen", dir: 1 });
   const [scroll, setScroll] = useState(0);
@@ -56,7 +59,7 @@ function MembersPage() {
         <div className="min-h-0 flex-1 overflow-auto" onScroll={(e) => setScroll(e.currentTarget.scrollTop)}>
           <div className="relative" style={{ height: rows.length * ROW }}>
             {visible.map((m, i) => {
-              const rk = relationKey(m, a);
+              const rk = relationKey(m, a, selectedId);
               const g = a.gen.get(m.id) ?? 1;
               return (
                 <button

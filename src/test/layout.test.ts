@@ -12,13 +12,20 @@ describe("layoutTree", () => {
     expect(a.secondary.has("m2")).toBe(true);
     expect(a.gen.get("m7")).toBe(3);
   });
-  it("places no overlapping nodes and centers parents", () => {
+  it("places generations vertically without overlapping cards", () => {
     const l = layoutTree(makeSeed(), o);
-    const keys = new Set(l.nodes.map((n) => `${n.x}:${n.y}`));
-    expect(keys.size).toBe(l.nodes.length);
-    const m3 = l.nodes.find((n) => n.id === "m3")!;
-    const kids = l.nodes.filter((n) => ["m7", "m9"].includes(n.id)).map((n) => n.y);
-    expect(m3.y).toBe((kids[0]! + kids[1]!) / 2);
+    for (const n of l.nodes) {
+      for (const other of l.nodes) {
+        if (n.id === other.id) continue;
+        expect(n.x + o.cardW <= other.x || other.x + o.cardW <= n.x || n.y + o.cardH <= other.y || other.y + o.cardH <= n.y).toBe(true);
+      }
+    }
+    const parent = l.nodes.find((n) => n.id === "m3");
+    const child = l.nodes.find((n) => n.id === "m7");
+    const spouse = l.nodes.find((n) => n.id === "m4");
+    expect(child?.y).toBeGreaterThan(parent?.y ?? 0);
+    expect(parent?.y).toBe(spouse?.y);
     expect(l.edges.length).toBe(8);
+    expect(l.edges.every((edge) => edge.to.y > edge.from.y)).toBe(true);
   });
 });
