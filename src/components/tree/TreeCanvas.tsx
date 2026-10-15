@@ -41,7 +41,7 @@ export function TreeCanvas({ containerRef }: { containerRef: React.RefObject<HTM
 
   // center on request
   useEffect(() => {
-    if (!ui.center) return;
+    if (!ui.center?.id) return;
     const n = posById.get(ui.center.id);
     const el = containerRef.current;
     if (!n || !el) return;

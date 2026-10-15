@@ -11,7 +11,7 @@ export interface UI {
   panelOpen: boolean;
   sidebarOpen: boolean;
   detailsId?: string | undefined;
-  modal?: { mode: "add" | "edit" | undefined; id?: string; relation?: "root" | "child" | "spouse"; relatedTo?: string };
+  modal?: { mode: "add" | "edit" | undefined; id?: string; relation?: "root" | "child" | "spouse"; relatedTo?: string } | undefined;
   center?: { id: string | undefined; n: number };
   warning?: string | undefined;
 }
