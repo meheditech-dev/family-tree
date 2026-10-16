@@ -30,8 +30,8 @@ export async function prepareTreeExport(format: ExportFormat): Promise<PreparedE
     el.classList.remove("ring-4", "ring-primary/30", "ring-warning");
   });
   clone.querySelectorAll<SVGElement>("g[opacity]").forEach((el) => el.setAttribute("opacity", "1"));
-  const width = Number(source.dataset.treeWidth) + EXPORT_PADDING * 2;
-  const height = Number(source.dataset.treeHeight) + EXPORT_PADDING * 2;
+  const width = Number(source.dataset["treeWidth"]) + EXPORT_PADDING * 2;
+  const height = Number(source.dataset["treeHeight"]) + EXPORT_PADDING * 2;
   if (!Number.isFinite(width) || !Number.isFinite(height)) throw new Error("Invalid tree dimensions");
   const wrapper = document.createElement("div");
   wrapper.className = "tree-export-surface";
