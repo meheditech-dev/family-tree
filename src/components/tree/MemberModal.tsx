@@ -50,7 +50,7 @@ export function MemberModal() {
       <form
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        className="max-h-[90vh] w-full max-w-md overflow-auto rounded-2xl border bg-card p-6 shadow-[var(--shadow-float)]"
+        className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-auto rounded-2xl border bg-card p-6 pb-8 shadow-[var(--shadow-float)]"
       >
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-lg font-bold">{modal.mode === "edit" ? t("editMember") : t("addMember")}</h2>
