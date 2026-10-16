@@ -30,8 +30,8 @@ export async function prepareTreeExport(format: ExportFormat): Promise<PreparedE
     el.classList.remove("ring-4", "ring-primary/30", "ring-warning");
   });
   clone.querySelectorAll<SVGElement>("g[opacity]").forEach((el) => el.setAttribute("opacity", "1"));
-  const width = Number(source.dataset.treeWidth) + EXPORT_PADDING * 2;
-  const height = Number(source.dataset.treeHeight) + EXPORT_PADDING * 2;
+  const width = Number(source.dataset["treeWidth"]) + EXPORT_PADDING * 2;
+  const height = Number(source.dataset["treeHeight"]) + EXPORT_PADDING * 2;
   if (!Number.isFinite(width) || !Number.isFinite(height)) throw new Error("Invalid tree dimensions");
   const wrapper = document.createElement("div");
   wrapper.className = "tree-export-surface";
@@ -45,7 +45,7 @@ export async function prepareTreeExport(format: ExportFormat): Promise<PreparedE
     const backgroundColor = getComputedStyle(wrapper).backgroundColor;
     const capture = (w: number, h: number, ratio: number) => toCanvas(wrapper, {
       width: w, height: h, pixelRatio: ratio, backgroundColor,
-      skipAutoScale: true, style: { position: "relative", left: "0", top: "0" },
+      skipAutoScale: true, style: { position: "relative", left: "0", top: "0", opacity: "1", zIndex: "auto" },
     });
     if (format !== "pdf") {
       const canvas = await capture(width, height, rasterRatio(width, height));

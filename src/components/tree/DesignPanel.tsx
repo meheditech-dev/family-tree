@@ -10,7 +10,7 @@ export function DesignPanel() {
   if (!open) return null;
   const seg = (on: boolean) => `flex-1 rounded-md py-1.5 text-sm ${on ? "bg-card font-semibold shadow-[var(--shadow-card)]" : "text-muted-foreground"}`;
   return (
-    <aside className="no-print absolute inset-x-0 bottom-0 z-30 max-h-[60%] overflow-auto rounded-t-2xl border bg-card p-5 shadow-[var(--shadow-float)] md:inset-x-auto md:bottom-auto md:right-4 md:top-4 md:w-64 md:rounded-2xl">
+    <aside className="no-print absolute inset-x-0 bottom-0 z-30 max-h-[80%] overflow-auto rounded-t-2xl border bg-card p-5 shadow-[var(--shadow-float)] md:inset-x-auto md:bottom-auto md:right-4 md:top-4 md:w-64 md:rounded-2xl">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="font-bold">{t("design")}</h2>
         <button aria-label="close" onClick={() => setUI({ panelOpen: false })} className="rounded-md p-1 hover:bg-muted"><X className="size-4" /></button>
