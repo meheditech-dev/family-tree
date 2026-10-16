@@ -16,3 +16,4 @@
 - Layout reserves descendant subtree widths before placing couples above children to prevent overlapping branches.
 - Relationship labels use `relationKey` with the selected member as reference so all tree cards share one perspective.
 - Exports capture a detached full-tree copy with neutral visibility and safe raster sizing; large PDFs include an overview and overlapping detail sheets to avoid viewport clipping and preserve readability.
+- The export surface (`.tree-export-surface`) must stay onscreen and invisible (opacity 0, z-index -1) — positioning it offscreen (e.g. left: -100000px) makes html-to-image capture a blank image.
