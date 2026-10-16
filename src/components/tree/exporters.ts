@@ -45,7 +45,7 @@ export async function prepareTreeExport(format: ExportFormat): Promise<PreparedE
     const backgroundColor = getComputedStyle(wrapper).backgroundColor;
     const capture = (w: number, h: number, ratio: number) => toCanvas(wrapper, {
       width: w, height: h, pixelRatio: ratio, backgroundColor,
-      skipAutoScale: true, style: { position: "relative", left: "0", top: "0" },
+      skipAutoScale: true, style: { position: "relative", left: "0", top: "0", opacity: "1", zIndex: "auto" },
     });
     if (format !== "pdf") {
       const canvas = await capture(width, height, rasterRatio(width, height));
