@@ -38,6 +38,7 @@ const defaultSettings: Settings = {
   nodeSize: 100,
   photoSize: 44,
   lineStyle: "curved",
+  treeLayout: "vertical",
   zoom: 1,
 };
 

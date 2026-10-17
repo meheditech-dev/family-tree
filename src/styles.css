@@ -60,6 +60,7 @@
   --color-gen-3: var(--gen-3);
   --color-gen-4: var(--gen-4);
   --color-relation: var(--relation);
+  --color-love: var(--love);
   --color-warning: var(--warning);
   --font-sans: "Hind Siliguri", "Noto Sans Bengali", system-ui, sans-serif;
   --shadow-card: 0 1px 2px oklch(0.2 0.02 180 / 6%), 0 6px 18px -6px oklch(0.2 0.02 180 / 14%);
@@ -104,6 +105,7 @@
   --gen-3: oklch(0.55 0.2 300);
   --gen-4: oklch(0.65 0.2 0);
   --relation: oklch(0.58 0.2 25);
+  --love: oklch(0.68 0.17 355);
   --warning: oklch(0.75 0.15 75);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -141,6 +143,7 @@
   --canvas: oklch(0.16 0.01 200);
   --deceased: oklch(0.55 0.01 250);
   --relation: oklch(0.7 0.17 25);
+  --love: oklch(0.74 0.16 355);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);

@@ -37,6 +37,7 @@ export const parentsOf = (m: Member): string[] =>
 
 export type Lang = "bn" | "en";
 export type LineStyle = "straight" | "curved";
+export type TreeLayout = "vertical" | "horizontal";
 
 export interface Settings {
   language: Lang;
@@ -45,6 +46,7 @@ export interface Settings {
   nodeSize: number; // percent 80-130
   photoSize: number; // px 32-64
   lineStyle: LineStyle;
+  treeLayout: TreeLayout;
   zoom: number; // 0.3 - 2
 }
 

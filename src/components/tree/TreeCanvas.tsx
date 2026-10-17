@@ -3,6 +3,7 @@ import { useStore, setSettings, getState } from "@/lib/tree/store";
 import { analyze, edgePath, layoutTree, layoutTreeHorizontal } from "@/lib/tree/layout";
 import { relationKey } from "@/lib/tree/helpers";
 import { cardDimensions, checkOverlaps } from "@/lib/tree/export-geometry";
+import type { TreeLayout } from "@/lib/tree/types";
 import { MemberCard } from "./MemberCard";
 import { MemberCardRow } from "./MemberCardRow";
 
@@ -10,14 +11,15 @@ const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 export const ZMIN = 0.3;
 export const ZMAX = 2;
 
-export type CanvasLayout = "vertical" | "horizontal";
+/** Bootstrap heart-fill (16×16 viewBox); centred on each marriage's midpoint. */
+const HEART_PATH = "M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z";
 
 export function TreeCanvas({
   containerRef,
   treeLayout = "vertical",
 }: {
   containerRef: React.RefObject<HTMLDivElement | null>;
-  treeLayout?: CanvasLayout;
+  treeLayout?: TreeLayout;
 }) {
   const members  = useStore((s) => s.members);
   const settings = useStore((s) => s.settings);
@@ -63,14 +65,16 @@ export function TreeCanvas({
 
   const byId = analysis.byId;
   const zoom = settings.zoom;
-  const framed = useRef(false);
+  const framed = useRef<TreeLayout | null>(null);
 
-  // Auto-frame on first render
+  // Auto-frame on first render, and again whenever the direction flips
+  // (the same tree has a different extent in each orientation).
   useEffect(() => {
     const el = containerRef.current;
     const root = layout.nodes.find((n) => n.id === analysis.roots[0]);
-    if (!el || !root || framed.current || ui.center) return;
-    framed.current = true;
+    if (!el || !root || ui.center) return;
+    if (framed.current === treeLayout) return;
+    framed.current = treeLayout;
     const z = clamp(
       Math.min(
         (el.clientWidth  - 48) / layout.width,
@@ -86,9 +90,10 @@ export function TreeCanvas({
       : cardW;
     setSettings({ zoom: z });
     setPan({ x: el.clientWidth / 2 - (root.x + coupleW / 2) * z, y: 24 });
-  }, [layout, analysis, byId, cardW, opts.spouseGap, containerRef, ui.center]);
+  }, [layout, analysis, byId, cardW, opts.spouseGap, containerRef, ui.center, treeLayout]);
 
-  // Centre on a specific node when requested
+  // Centre on a specific node when requested (also re-centres when the
+  // layout direction flips, since the node's position changes).
   useEffect(() => {
     if (!ui.center?.id) return;
     const n  = posById.get(ui.center.id);
@@ -100,7 +105,7 @@ export function TreeCanvas({
       y: el.clientHeight / 2 - (n.y + cardH / 2) * z,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ui.center]);
+  }, [ui.center, horizontal]);
 
   // Wheel zoom anchored at cursor
   useEffect(() => {
@@ -205,12 +210,11 @@ export function TreeCanvas({
           height={layout.height}
         >
           {layout.spouseLinks.map((l, i) => (
-            <line
+            <path
               key={i}
-              x1={l.x1} x2={l.x2} y1={l.y1} y2={l.y2}
-              stroke="var(--primary)"
-              strokeWidth={2}
-              strokeDasharray="4 3"
+              d={HEART_PATH}
+              transform={`translate(${(l.x1 + l.x2) / 2 - 8}, ${(l.y1 + l.y2) / 2 - 8})`}
+              fill="var(--love)"
             />
           ))}
           {layout.edges.map((e) => (

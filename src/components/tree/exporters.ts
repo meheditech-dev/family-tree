@@ -58,6 +58,9 @@ export { cardDimensions } from "@/lib/tree/export-geometry";
 // ─── SVG namespace helper ──────────────────────────────────────────────────────
 
 const NS = "http://www.w3.org/2000/svg";
+
+/** Bootstrap heart-fill (16×16 viewBox); centred on each marriage's midpoint. */
+const HEART_PATH = "M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z";
 function svgEl<K extends keyof SVGElementTagNameMap>(tag: K): SVGElementTagNameMap[K] {
   return document.createElementNS(NS, tag) as SVGElementTagNameMap[K];
 }
@@ -336,10 +339,13 @@ function buildTreeSVG(horizontal: boolean): SVGSVGElement {
   const lineStyle = settings.lineStyle;
 
   for (const l of layout.spouseLinks) {
-    const ln = svgEl("line");
-    set(ln, { x1:l.x1, y1:l.y1, x2:l.x2, y2:l.y2,
-              stroke:pri, "stroke-width":2, "stroke-dasharray":"4 3" });
-    connG.appendChild(ln);
+    const h = svgEl("path");
+    set(h, {
+      d: HEART_PATH,
+      transform: `translate(${(l.x1 + l.x2) / 2 - 8}, ${(l.y1 + l.y2) / 2 - 8})`,
+      fill: color("--love", "#f472b6"),
+    });
+    connG.appendChild(h);
   }
 
   const dimOf = (id: string) =>

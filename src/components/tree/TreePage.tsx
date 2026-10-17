@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { Plus, Crosshair, Search, Minus, Maximize, SlidersHorizontal } from "lucide-react";
 import { getState, setSettings, setUI, useStore } from "@/lib/tree/store";
 import { useT } from "@/lib/tree/i18n";
+import type { TreeLayout } from "@/lib/tree/types";
 import { TreeCanvas, ZMAX, ZMIN } from "@/components/tree/TreeCanvas";
 import { DesignPanel } from "@/components/tree/DesignPanel";
 
@@ -10,6 +11,7 @@ export function TreePage() {
   const ref = useRef<HTMLDivElement>(null);
   const genFilter = useStore((s) => s.ui.genFilter);
   const zoom = useStore((s) => s.settings.zoom);
+  const treeLayout = useStore((s) => s.settings.treeLayout);
   const panelOpen = useStore((s) => s.ui.panelOpen);
 
   const centerMe = () => {
@@ -57,6 +59,17 @@ export function TreePage() {
         <button onClick={find} className={btn}>
           <Search className="size-4" /> {t("find")}
         </button>
+        <label className={btn}>
+          <span className="text-muted-foreground">{t("layout")}:</span>
+          <select
+            value={treeLayout}
+            onChange={(e) => setSettings({ treeLayout: e.target.value as TreeLayout })}
+            className="bg-transparent font-medium outline-none"
+          >
+            <option value="vertical">{t("vertical")}</option>
+            <option value="horizontal">{t("horizontal")}</option>
+          </select>
+        </label>
         {!panelOpen && (
           <button
             onClick={() => setUI({ panelOpen: true })}
@@ -68,7 +81,7 @@ export function TreePage() {
         )}
       </div>
       <div className="relative min-h-0 flex-1">
-        <TreeCanvas containerRef={ref} />
+        <TreeCanvas containerRef={ref} treeLayout={treeLayout} />
         <DesignPanel />
         <Legend />
         <div className="no-print absolute bottom-4 right-4 z-20 hidden items-center gap-1 rounded-full border bg-card p-1 shadow-[var(--shadow-card)] md:flex">
