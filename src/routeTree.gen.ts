@@ -10,12 +10,25 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FamilyRouteImport } from './routes/family'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as MembersRouteImport } from './routes/members'
 import { Route as RelationshipsRouteImport } from './routes/relationships'
+import { Route as TreeRouteImport } from './routes/tree'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FamilyRoute = FamilyRouteImport.update({
+  id: '/family',
+  path: '/family',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MembersRoute = MembersRouteImport.update({
@@ -28,35 +41,59 @@ const RelationshipsRoute = RelationshipsRouteImport.update({
   path: '/relationships',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TreeRoute = TreeRouteImport.update({
+  id: '/tree',
+  path: '/tree',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/family': typeof FamilyRoute
+  '/home': typeof HomeRoute
   '/members': typeof MembersRoute
   '/relationships': typeof RelationshipsRoute
+  '/tree': typeof TreeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/family': typeof FamilyRoute
+  '/home': typeof HomeRoute
   '/members': typeof MembersRoute
   '/relationships': typeof RelationshipsRoute
+  '/tree': typeof TreeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/family': typeof FamilyRoute
+  '/home': typeof HomeRoute
   '/members': typeof MembersRoute
   '/relationships': typeof RelationshipsRoute
+  '/tree': typeof TreeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/members' | '/relationships'
+  fullPaths: '/' | '/family' | '/home' | '/members' | '/relationships' | '/tree'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/members' | '/relationships'
-  id: '__root__' | '/' | '/members' | '/relationships'
+  to: '/' | '/family' | '/home' | '/members' | '/relationships' | '/tree'
+  id:
+    | '__root__'
+    | '/'
+    | '/family'
+    | '/home'
+    | '/members'
+    | '/relationships'
+    | '/tree'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  FamilyRoute: typeof FamilyRoute
+  HomeRoute: typeof HomeRoute
   MembersRoute: typeof MembersRoute
   RelationshipsRoute: typeof RelationshipsRoute
+  TreeRoute: typeof TreeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -66,6 +103,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/family': {
+      id: '/family'
+      path: '/family'
+      fullPath: '/family'
+      preLoaderRoute: typeof FamilyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/members': {
@@ -82,13 +133,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RelationshipsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tree': {
+      id: '/tree'
+      path: '/tree'
+      fullPath: '/tree'
+      preLoaderRoute: typeof TreeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  FamilyRoute: FamilyRoute,
+  HomeRoute: HomeRoute,
   MembersRoute: MembersRoute,
   RelationshipsRoute: RelationshipsRoute,
+  TreeRoute: TreeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

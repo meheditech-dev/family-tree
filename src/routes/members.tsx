@@ -64,7 +64,7 @@ function MembersPage() {
               return (
                 <button
                   key={m.id}
-                  onClick={() => { nav({ to: "/" }); setUI({ selectedId: m.id, center: { id: m.id, n: Date.now() } }); }}
+                  onClick={() => { nav({ to: "/tree" }); setUI({ selectedId: m.id, center: { id: m.id, n: Date.now() } }); }}
                   className="absolute inset-x-0 grid grid-cols-[2fr_1fr_1fr_1fr] items-center gap-4 border-b px-4 text-left text-sm hover:bg-muted"
                   style={{ top: (start + i) * ROW, height: ROW }}
                 >

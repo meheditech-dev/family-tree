@@ -13,6 +13,9 @@ export interface Member {
   notes?: string | undefined;
   phone?: string | undefined;
   address?: string | undefined;
+  occupation?: string | undefined;
+  bloodGroup?: string | undefined;
+  birthplace?: string | undefined;
 }
 
 export type Lang = "bn" | "en";
