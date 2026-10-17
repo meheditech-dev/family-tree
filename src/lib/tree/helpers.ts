@@ -5,8 +5,9 @@ import type { Analysis } from "./layout";
 export function relationKey(m: Member, a: Analysis, referenceId?: string): TKey | null {
   if (referenceId && a.byId.has(referenceId)) {
     if (m.id === referenceId) return "self";
-    const reference = a.byId.get(referenceId);
-    if (reference?.spouseId === m.id || m.spouseId === referenceId) return "spouse";
+    const refSpouses = a.spouseIdsOf.get(referenceId) ?? [];
+    const mSpouses = a.spouseIdsOf.get(m.id) ?? [];
+    if (refSpouses.includes(m.id) || mSpouses.includes(referenceId)) return "spouse";
     const f = m.gender === "female";
     const ancestors = (id: string) => {
       const distances = new Map<string, number>([[id, 0]]);
@@ -14,14 +15,17 @@ export function relationKey(m: Member, a: Analysis, referenceId?: string): TKey 
       for (let i = 0; i < queue.length; i++) {
         const currentId = queue[i];
         if (!currentId) continue;
-        const current = a.byId.get(currentId);
-        const parentId = current?.parentId;
-        if (!parentId || !a.byId.has(parentId)) continue;
-        const parent = a.byId.get(parentId);
-        for (const p of [parentId, parent?.spouseId]) {
-          if (!p || !a.byId.has(p) || distances.has(p)) continue;
-          distances.set(p, (distances.get(currentId) ?? 0) + 1);
-          queue.push(p);
+        for (const parentId of a.parentIdsOf.get(currentId) ?? []) {
+          if (!a.byId.has(parentId) || distances.has(parentId)) {
+            continue;
+          }
+          distances.set(parentId, (distances.get(currentId) ?? 0) + 1);
+          queue.push(parentId);
+          for (const pSpouse of a.spouseIdsOf.get(parentId) ?? []) {
+            if (!a.byId.has(pSpouse) || distances.has(pSpouse)) continue;
+            distances.set(pSpouse, (distances.get(currentId) ?? 0) + 1);
+            queue.push(pSpouse);
+          }
         }
       }
       return distances;
@@ -75,16 +79,16 @@ export function relationKey(m: Member, a: Analysis, referenceId?: string): TKey 
     };
     const direct = bloodRelation(m.id, referenceId);
     if (direct) return direct;
-    if (reference?.spouseId) {
-      const throughSpouse = bloodRelation(m.id, reference.spouseId);
+    for (const sp of refSpouses) {
+      const throughSpouse = bloodRelation(m.id, sp);
       if (throughSpouse === "father" || throughSpouse === "mother")
         return f ? "motherInLaw" : "fatherInLaw";
       if (throughSpouse === "brother" || throughSpouse === "sister")
         return f ? "sisterInLaw" : "brotherInLaw";
       if (throughSpouse) return "relativeInLaw";
     }
-    if (m.spouseId) {
-      const throughSpouse = bloodRelation(m.spouseId, referenceId);
+    for (const sp of mSpouses) {
+      const throughSpouse = bloodRelation(sp, referenceId);
       if (throughSpouse === "son" || throughSpouse === "daughter")
         return f ? "daughterInLaw" : "sonInLaw";
       if (throughSpouse === "brother" || throughSpouse === "sister")

@@ -157,7 +157,7 @@ function buildVerticalCard(a: CardArgs): SVGGElement {
   set(avBg, { cx, cy, r:photo/2, fill:color("--muted","#f3f4f6") });
   g.appendChild(avBg);
   if (m.photo) {
-    const clipId = `c${m.id}`;
+    const clipId = `c${m.id}_${x}_${y}`;
     const defs = svgEl("defs"); const cp = svgEl("clipPath"); cp.id = clipId;
     const cc = svgEl("circle"); set(cc, { cx, cy, r:photo/2 });
     cp.appendChild(cc); defs.appendChild(cp); g.appendChild(defs);
@@ -243,7 +243,7 @@ function buildRowCard(a: CardArgs): SVGGElement {
 
   const avBg = svgEl("circle"); set(avBg, { cx, cy, r:photo/2, fill:color("--muted","#f3f4f6") }); g.appendChild(avBg);
   if (m.photo) {
-    const clipId = `cr${m.id}`;
+    const clipId = `cr${m.id}_${x}_${y}`;
     const defs = svgEl("defs"); const cp = svgEl("clipPath"); cp.id = clipId;
     const cc = svgEl("circle"); set(cc, { cx, cy, r:photo/2 });
     cp.appendChild(cc); defs.appendChild(cp); g.appendChild(defs);

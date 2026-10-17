@@ -22,23 +22,17 @@ export function DetailsDrawer() {
   const pid = a.primaryOf(id);
   const pm = a.byId.get(pid);
   if (!pm) return null;
-  const parent = m.parentId ? a.byId.get(m.parentId) : undefined;
-  const parentSpouse = parent?.spouseId ? a.byId.get(parent.spouseId) : undefined;
-  // Reuse existing relationship fields: father/mother from the linked parent (+ spouse),
-  // children derived from parent IDs via the layout analysis.
-  const father =
-    parent?.gender === "male" ? parent : parentSpouse?.gender === "male" ? parentSpouse : undefined;
-  const mother =
-    parent?.gender === "female"
-      ? parent
-      : parentSpouse?.gender === "female"
-        ? parentSpouse
-        : undefined;
-  const spouse = m.spouseId ? a.byId.get(m.spouseId) : undefined;
-  const kids = a.children.get(pid) ?? [];
-  const parentP = pm.parentId ? a.primaryOf(pm.parentId) : undefined;
+  const parents = (a.parentIdsOf.get(id) ?? []).map((p) => a.byId.get(p));
+  const father = parents.find((p) => p?.gender === "male");
+  const mother = parents.find((p) => p?.gender === "female");
+  const adoptive = m.parentLink === "adoptive";
+  const spouses = (a.spouseIdsOf.get(id) ?? []).filter((s) => a.byId.has(s));
+  // Children of every marriage this member belongs to, deduplicated.
+  const kids = [...new Set(a.childrenByParent.get(id) ?? [])].filter((k) => k !== id);
   const isSec = a.secondary.has(id);
-  const sibs = !isSec && parentP ? (a.children.get(parentP) ?? []).filter((x) => x !== id) : [];
+  // Siblings share the same marriage unit (same family branch).
+  const unit = a.unitOfChild.get(id);
+  const sibs = !isSec && unit ? unit.childIds.filter((x) => x !== id) : [];
 
   const close = () => setUI({ detailsId: undefined });
 
@@ -121,9 +115,21 @@ export function DetailsDrawer() {
             label={t("mother")}
             value={mother ? <MemberLink mid={mother.id} /> : <EmptyValue />}
           />
+          {parents.length > 0 && (
+            <Field
+              label={t("parentRelationship")}
+              value={adoptive ? t("adoptive") : t("biological")}
+            />
+          )}
           <Field
-            label={t("spouse")}
-            value={spouse ? <MemberLink mid={spouse.id} /> : <EmptyValue />}
+            label={spouses.length > 1 ? t("spouses") : t("spouse")}
+            value={
+              spouses.length ? (
+                <div className="flex flex-wrap gap-1">{linked(spouses)}</div>
+              ) : (
+                <EmptyValue />
+              )
+            }
           />
           <Field
             label={t("children")}

@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import type { Member, Settings } from "./types";
+import { parentsOf, spousesOf } from "./types";
 import { makeSeed } from "./seed";
 
 const KEY = "treemind_v1";
@@ -40,8 +41,40 @@ const defaultSettings: Settings = {
   zoom: 1,
 };
 
+/**
+ * Rebuild the relation arrays from legacy mirrors, backfill missing
+ * back-references, prune dangling ids and refresh the legacy mirrors.
+ * Keeps old `spouseId`/`parentId`-only data loading unchanged.
+ */
+export function normalizeRelations(members: Member[]): Member[] {
+  members = members.filter((m) => m && typeof m.id === "string");
+  const ids = new Set(members.map((m) => m.id));
+  const spouseMap = new Map<string, string[]>();
+  const parentMap = new Map<string, string[]>();
+  for (const m of members) {
+    spouseMap.set(m.id, [...new Set(spousesOf(m).filter((s) => s !== m.id && ids.has(s)))]);
+    parentMap.set(m.id, [...new Set(parentsOf(m).filter((p) => p !== m.id && ids.has(p)))]);
+  }
+  for (const [id, sps] of spouseMap) {
+    for (const s of sps) {
+      const back = spouseMap.get(s)!;
+      if (!back.includes(id)) back.push(id);
+    }
+  }
+  return members.map((m) => {
+    const sps = spouseMap.get(m.id)!;
+    const ps = parentMap.get(m.id)!;
+    const next: Member = { ...m };
+    next.spouseIds = sps.length ? sps : undefined;
+    next.spouseId = sps[0];
+    next.parentIds = ps.length ? ps : undefined;
+    next.parentId = ps[0];
+    return next;
+  });
+}
+
 let state: State = {
-  members: makeSeed(),
+  members: normalizeRelations(makeSeed()),
   settings: defaultSettings,
   ui: { search: "", genFilter: 0, panelOpen: true, sidebarOpen: false },
 };
@@ -81,7 +114,10 @@ export function hydrate() {
       const d = JSON.parse(raw);
       if (Array.isArray(d.members)) {
         setState(
-          () => ({ members: d.members, settings: { ...defaultSettings, ...d.settings } }),
+          () => ({
+            members: normalizeRelations(d.members as Member[]),
+            settings: { ...defaultSettings, ...d.settings },
+          }),
           false,
         );
         return;
@@ -111,47 +147,98 @@ export function saveMember(m: Member, relation?: "root" | "child" | "spouse", re
   setState((s) => {
     const exists = s.members.some((x) => x.id === m.id);
     let members = exists
-      ? s.members.map((x) => (x.id === m.id ? { ...x, ...m } : x))
+      ? // Marriage lists are edited through addMarriage/removeMarriage, so an
+        // edit payload must not resurrect or drop spouse links.
+        s.members.map((x) =>
+          x.id === m.id ? { ...x, ...m, spouseId: x.spouseId, spouseIds: x.spouseIds } : x,
+        )
       : [...s.members, m];
     if (!exists && relation === "spouse" && relatedTo) {
       members = members.map((x) =>
         x.id === relatedTo
-          ? { ...x, spouseId: m.id }
+          ? { ...x, spouseIds: [...spousesOf(x), m.id] }
           : x.id === m.id
-            ? { ...x, spouseId: relatedTo, parentId: undefined }
+            ? { ...x, spouseIds: [relatedTo], parentId: undefined, parentIds: undefined }
             : x,
       );
     }
-    return { members };
+    return { members: normalizeRelations(members) };
   });
+}
+
+/** Link two members as spouses — a new marriage alongside any existing ones. */
+export function addMarriage(aId: string, bId: string) {
+  setState((s) => ({
+    members: normalizeRelations(
+      s.members.map((x) =>
+        x.id === aId && !spousesOf(x).includes(bId)
+          ? { ...x, spouseIds: [...spousesOf(x), bId] }
+          : x.id === bId && !spousesOf(x).includes(aId)
+            ? { ...x, spouseIds: [...spousesOf(x), aId] }
+            : x,
+      ),
+    ),
+  }));
+}
+
+/** Dissolve one marriage between two members; other marriages are untouched. */
+export function removeMarriage(aId: string, bId: string) {
+  setState((s) => ({
+    members: normalizeRelations(
+      s.members.map((x) =>
+        x.id === aId || x.id === bId
+          ? { ...x, spouseIds: spousesOf(x).filter((o) => o !== (x.id === aId ? bId : aId)) }
+          : x,
+      ),
+    ),
+  }));
 }
 
 export function deleteMember(id: string) {
   setState((s) => {
+    const find = (mid: string) => s.members.find((x) => x.id === mid);
+    const spouseList = (mid: string) => {
+      const m = find(mid);
+      return m ? spousesOf(m).filter((o) => find(o)) : [];
+    };
+    const hasParent = (mid: string) => {
+      const m = find(mid);
+      return m ? parentsOf(m).some((p) => find(p)) : false;
+    };
     const remove = new Set<string>();
     const visit = (mid: string) => {
       if (remove.has(mid)) return;
       remove.add(mid);
-      const m = s.members.find((x) => x.id === mid);
-      const sp = m?.spouseId ? s.members.find((x) => x.id === m.spouseId) : undefined;
-      // drop spouse that married in (no own parent) only when removing a descendant chain
-      if (sp && !sp.parentId && mid !== id) remove.add(sp.id);
-      if (sp && !sp.parentId && mid === id && m?.parentId) remove.add(sp.id);
+      const sps = spouseList(mid);
+      for (const sid of sps) {
+        // drop a married-in spouse (no parents of their own) only when removing
+        // a descendant chain, or a subtree root who themselves has parents
+        if (!hasParent(sid) && (mid !== id || hasParent(mid))) remove.add(sid);
+      }
       s.members
-        .filter((x) => x.parentId === mid || (sp && x.parentId === sp.id))
+        .filter((x) => {
+          const ps = parentsOf(x);
+          return ps.includes(mid) || sps.some((sid) => ps.includes(sid));
+        })
         .forEach((c) => visit(c.id));
     };
     visit(id);
-    const members = s.members
-      .filter((x) => !remove.has(x.id))
-      .map((x) => (x.spouseId && remove.has(x.spouseId) ? { ...x, spouseId: undefined } : x));
+    const members = normalizeRelations(
+      s.members
+        .filter((x) => !remove.has(x.id))
+        .map((x) => ({
+          ...x,
+          spouseIds: spousesOf(x).filter((o) => !remove.has(o)),
+          parentIds: parentsOf(x).filter((o) => !remove.has(o)),
+        })),
+    );
     return { members, ui: { ...s.ui, detailsId: undefined, selectedId: undefined } };
   });
 }
 
 export function resetDemo() {
   setState((s) => ({
-    members: makeSeed(),
+    members: normalizeRelations(makeSeed()),
     ui: { ...s.ui, selectedId: undefined, detailsId: undefined },
   }));
 }
@@ -167,6 +254,6 @@ export function importMembers(data: unknown): boolean {
       (m.gender === "male" || m.gender === "female"),
   );
   if (!ok) return false;
-  setState(() => ({ members: arr as Member[] }));
+  setState(() => ({ members: normalizeRelations(arr as Member[]) }));
   return true;
 }

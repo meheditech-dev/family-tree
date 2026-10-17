@@ -7,6 +7,8 @@ import { genVar } from "@/lib/tree/helpers";
 
 interface Props {
   m: Member;
+  /** Unique rendered instance — a person with several marriages has one card per unit. */
+  nodeKey: string;
   x: number;
   y: number;
   w: number;
@@ -21,6 +23,7 @@ interface Props {
 
 export const MemberCard = memo(function MemberCard({
   m,
+  nodeKey,
   x,
   y,
   w,
@@ -34,7 +37,7 @@ export const MemberCard = memo(function MemberCard({
 }: Props) {
   const t = useT();
   const openId = useStore((s) => s.ui.menuId);
-  const isOpen = openId === m.id;
+  const isOpen = openId === nodeKey;
   const dead = !!m.deathYear;
 
   const act = (fn: () => void) => () => {
@@ -82,7 +85,7 @@ export const MemberCard = memo(function MemberCard({
         className="no-print absolute left-1.5 top-1.5 grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-muted"
         onClick={(e) => {
           e.stopPropagation();
-          setUI({ menuId: isOpen ? undefined : m.id });
+          setUI({ menuId: isOpen ? undefined : nodeKey });
         }}
       >
         <MoreVertical className="size-4" />

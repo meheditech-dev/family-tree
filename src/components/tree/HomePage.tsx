@@ -55,11 +55,7 @@ export function HomePage() {
 
   const stats = useMemo(() => {
     const living = members.filter((m) => !m.deathYear).length;
-    const couples = new Set(
-      members
-        .filter((m) => m.spouseId)
-        .map((m) => [String(m.id), String(m.spouseId)].sort().join("|")),
-    ).size;
+    const couples = a.marriages.length;
 
     const perGen = new Map<number, number>();
     members.forEach((m) => {

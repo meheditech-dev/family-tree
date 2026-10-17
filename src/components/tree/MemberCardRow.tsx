@@ -25,6 +25,8 @@ import { genVar } from "@/lib/tree/helpers";
 
 interface Props {
   m: Member;
+  /** Unique rendered instance — a person with several marriages has one card per unit. */
+  nodeKey: string;
   x: number;
   y: number;
   w: number;
@@ -41,6 +43,7 @@ const STRIP_W = 4; // px — gender / status left-edge strip
 
 export const MemberCardRow = memo(function MemberCardRow({
   m,
+  nodeKey,
   x,
   y,
   w,
@@ -54,7 +57,7 @@ export const MemberCardRow = memo(function MemberCardRow({
 }: Props) {
   const t = useT();
   const openId = useStore((s) => s.ui.menuId);
-  const isOpen = openId === m.id;
+  const isOpen = openId === nodeKey;
   const dead = !!m.deathYear;
 
   const act = (fn: () => void) => () => {
@@ -175,7 +178,7 @@ export const MemberCardRow = memo(function MemberCardRow({
         className="no-print mr-1.5 grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-muted"
         onClick={(e) => {
           e.stopPropagation(); // do not open the drawer
-          setUI({ menuId: isOpen ? undefined : m.id });
+          setUI({ menuId: isOpen ? undefined : nodeKey });
         }}
       >
         <MoreVertical className="size-4" />

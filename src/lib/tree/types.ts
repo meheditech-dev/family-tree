@@ -1,4 +1,5 @@
 export type Gender = "male" | "female";
+export type ParentLink = "biological" | "adoptive";
 
 export interface Member {
   id: string;
@@ -8,8 +9,16 @@ export interface Member {
   deathYear?: number | undefined;
   photo?: string | undefined;
   role?: string | undefined;
+  /** Legacy single-parent mirror — always equals parentIds[0] after normalization. */
   parentId?: string | undefined;
+  /** All parents (biological or adoptive), in the order they were linked. */
+  parentIds?: string[] | undefined;
+  /** How this member is linked to `parentIds` — biological or adoptive. */
+  parentLink?: ParentLink | undefined;
+  /** Legacy first-spouse mirror — always equals spouseIds[0] after normalization. */
   spouseId?: string | undefined;
+  /** Every spouse; each entry represents one marriage, in marriage order. */
+  spouseIds?: string[] | undefined;
   notes?: string | undefined;
   phone?: string | undefined;
   address?: string | undefined;
@@ -17,6 +26,14 @@ export interface Member {
   bloodGroup?: string | undefined;
   birthplace?: string | undefined;
 }
+
+/** All spouses of a member — `spouseIds` wins when present (empty = unlinked). */
+export const spousesOf = (m: Member): string[] =>
+  m.spouseIds ?? (m.spouseId ? [m.spouseId] : []);
+
+/** All parent ids of a member — `parentIds` wins when present (empty = unlinked). */
+export const parentsOf = (m: Member): string[] =>
+  m.parentIds ?? (m.parentId ? [m.parentId] : []);
 
 export type Lang = "bn" | "en";
 export type LineStyle = "straight" | "curved";

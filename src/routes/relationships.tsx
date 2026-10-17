@@ -23,7 +23,7 @@ function RelPage() {
   const t = useT();
   const members = useStore((s) => s.members);
   const a = useMemo(() => analyze(members), [members]);
-  const couples = members.filter((m) => m.spouseId && a.secondary.has(m.spouseId));
+  const couples = a.marriages;
   const name = (id?: string) => (id ? a.byId.get(id)?.name : "");
   const Chip = ({ id }: { id: string }) => (
     <button onClick={() => setUI({ detailsId: id })} className="rounded-full bg-muted px-3 py-1 text-sm font-medium hover:bg-accent">{name(id)}</button>
@@ -35,8 +35,8 @@ function RelPage() {
         <section className="rounded-2xl border bg-card p-5">
           <h2 className="mb-4 font-semibold">{t("couples")}</h2>
           <div className="space-y-3">
-            {couples.map((m) => (
-              <div key={m.id} className="flex items-center gap-2"><Chip id={m.id} /><Heart className="size-4 text-female" /><Chip id={m.spouseId!} /></div>
+            {couples.map((c) => (
+              <div key={c.id} className="flex items-center gap-2"><Chip id={c.partners[0]} /><Heart className="size-4 text-female" /><Chip id={c.partners[1]} /></div>
             ))}
           </div>
         </section>

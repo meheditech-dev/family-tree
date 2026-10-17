@@ -48,7 +48,13 @@ export function TreeCanvas({
     [members, opts, horizontal],
   );
   const analysis = useMemo(() => analyze(members), [members]);
-  const posById  = useMemo(() => new Map(layout.nodes.map((n) => [n.id, n])), [layout]);
+  // A person with several marriages renders one node per unit; keep the first
+  // instance for centering/selection lookups by member id.
+  const posById  = useMemo(() => {
+    const map = new Map<string, (typeof layout.nodes)[number]>();
+    for (const n of layout.nodes) if (!map.has(n.id)) map.set(n.id, n);
+    return map;
+  }, [layout]);
 
   // Dev-only: log an error for every overlapping card pair.
   useMemo(() => {
@@ -74,9 +80,9 @@ export function TreeCanvas({
       ZMIN,
       ZMAX,
     );
-    const spouse  = byId.get(root.id)?.spouseId;
-    const coupleW = spouse && analysis.secondary.has(spouse)
-      ? cardW * 2 + opts.spouseGap
+    const rootNodes = layout.nodes.filter((n) => n.id === root.id);
+    const coupleW = rootNodes.length
+      ? Math.max(...rootNodes.map((n) => n.x + cardW)) - Math.min(...rootNodes.map((n) => n.x))
       : cardW;
     setSettings({ zoom: z });
     setPan({ x: el.clientWidth / 2 - (root.x + coupleW / 2) * z, y: 24 });
@@ -225,7 +231,7 @@ export function TreeCanvas({
           const m = byId.get(n.id);
           if (!m) return null;
           const sharedProps = {
-            key:      n.id,
+            nodeKey:  n.key,
             m,
             x:        n.x,
             y:        n.y,
@@ -239,8 +245,8 @@ export function TreeCanvas({
             match:    !!q && m.name.toLowerCase().includes(q),
           };
           return horizontal
-            ? <MemberCardRow {...sharedProps} />
-            : <MemberCard    {...sharedProps} />;
+            ? <MemberCardRow key={n.key} {...sharedProps} />
+            : <MemberCard    key={n.key} {...sharedProps} />;
         })}
       </div>
     </div>

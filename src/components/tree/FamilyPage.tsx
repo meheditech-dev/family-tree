@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
 import { Heart, Layers, Layout, Leaf, Plus, Sprout, Users } from "lucide-react";
 import { setUI, useStore } from "@/lib/tree/store";
+import { parentsOf, spousesOf } from "@/lib/tree/types";
 import { useT } from "@/lib/tree/i18n";
 import { analyze } from "@/lib/tree/layout";
 
@@ -64,32 +65,33 @@ export function FamilyPage() {
     const byId = new Map<Id, M>(members.map((m) => [m.id, m]));
     const kids = new Map<Id, M[]>();
     members.forEach((m) => {
-      if (m.parentId) kids.set(m.parentId, [...(kids.get(m.parentId) ?? []), m]);
+      for (const p of parentsOf(m)) kids.set(p, [...(kids.get(p) ?? []), m]);
     });
+    const spouseList = (m: M) => spousesOf(m).filter((s) => byId.has(s));
 
-    // Someone who married into a family has no parent here, but their spouse does.
-    const marriedIn = (m: M) => {
-      const sp = m.spouseId ? byId.get(m.spouseId) : undefined;
-      return Boolean(sp?.parentId);
-    };
+    // Someone who married into a family has no parent here, but a spouse does.
+    const marriedIn = (m: M) =>
+      !parentsOf(m).some((p) => byId.has(p)) &&
+      spouseList(m).some((s) => parentsOf(byId.get(s)!).some((p) => byId.has(p)));
 
     const seen = new Set<Id>();
     const out: {
       root: M;
       spouse?: M;
+      extraSpouses: number;
       size: number;
       depth: number;
       living: number;
     }[] = [];
 
     for (const root of members) {
-      if (root.parentId || marriedIn(root) || seen.has(root.id)) continue;
-      const spouse = root.spouseId ? byId.get(root.spouseId) : undefined;
+      if (parentsOf(root).some((p) => byId.has(p)) || marriedIn(root) || seen.has(root.id)) continue;
+      const spouses = spouseList(root).map((s) => byId.get(s)!);
 
       seen.add(root.id);
       const people = new Set<Id>([root.id]);
       const queue: M[] = [root];
-      if (spouse) {
+      for (const spouse of spouses) {
         seen.add(spouse.id);
         people.add(spouse.id);
         queue.push(spouse);
@@ -101,10 +103,12 @@ export function FamilyPage() {
           if (people.has(child.id)) continue;
           people.add(child.id);
           queue.push(child);
-          const cs = child.spouseId ? byId.get(child.spouseId) : undefined;
-          if (cs && !people.has(cs.id)) {
-            people.add(cs.id);
-            queue.push(cs);
+          for (const csId of spouseList(child)) {
+            const cs = byId.get(csId)!;
+            if (!people.has(cs.id)) {
+              people.add(cs.id);
+              queue.push(cs);
+            }
           }
         }
       }
@@ -115,7 +119,8 @@ export function FamilyPage() {
       const minGen = gens.length ? gens.reduce((a, b) => Math.min(a, b)) : 0;
       out.push({
         root,
-        ...(spouse !== undefined && { spouse }),
+        ...(spouses.length !== 0 && { spouse: spouses[0] }),
+        extraSpouses: Math.max(0, spouses.length - 1),
         size: ids.length,
         depth: maxGen - minGen + 1,
         living: ids.filter((id) => !byId.get(id)?.deathYear).length,
@@ -201,6 +206,11 @@ export function FamilyPage() {
                         <div className="flex items-center gap-1.5 truncate text-sm text-muted-foreground">
                           <Heart className="size-3.5 shrink-0 text-primary/70" />
                           <span className="truncate">{f.spouse.name}</span>
+                          {f.extraSpouses > 0 && (
+                            <span className="shrink-0 rounded-full bg-muted px-1.5 text-xs font-medium">
+                              +{f.extraSpouses}
+                            </span>
+                          )}
                         </div>
                       ) : null}
                     </div>
