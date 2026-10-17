@@ -55,42 +55,80 @@ function Sidebar() {
   const close = () => setUI({ sidebarOpen: false });
   const item = "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground border-l-[3px] border-transparent";
   const active = "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold bg-accent text-accent-foreground border-l-[3px] border-primary";
-  const nav: { to: "/" | "/members" | "/relationships"; label: string; icon: typeof Home; match?: boolean }[] = [
-    { to: "/", label: t("home"), icon: Home, match: false },
-    { to: "/", label: t("tree"), icon: Network, match: path === "/" },
+  const nav: {
+    to: "/" | "/family" | "/tree" | "/members" | "/relationships";
+    label: string;
+    icon: typeof Home;
+    match?: boolean;
+  }[] = [
+    { to: "/", label: t("home"), icon: Home, match: path === "/" },
+    { to: "/tree", label: t("tree"), icon: Network, match: path === "/tree" },
     { to: "/members", label: t("members"), icon: Users, match: path === "/members" },
     { to: "/relationships", label: t("relations"), icon: HeartHandshake, match: path === "/relationships" },
-    { to: "/relationships", label: t("family"), icon: UsersRound, match: false },
+    { to: "/family", label: t("family"), icon: UsersRound, match: path === "/family" },
   ];
   return (
     <>
       {open && <div className="fixed inset-0 z-40 bg-foreground/30 md:hidden" onClick={close} />}
       <aside
-        className={`no-print fixed inset-y-0 left-0 z-50 flex w-[220px] flex-col border-r bg-card p-4 transition-transform duration-200 md:static md:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}
+        className={`no-print fixed inset-y-0 left-0 z-50 flex w-[220px] flex-col border-r bg-card transition-transform duration-200 md:static md:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <div className="mb-6 flex items-center gap-2 px-2">
-          <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground"><Leaf className="size-4" /></span>
+        {/* Logo */}
+        <div className="flex shrink-0 items-center gap-2 px-6 py-5">
+          <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">
+            <Leaf className="size-4" />
+          </span>
           <span className="text-lg font-bold">TreeMind</span>
-          <button className="ml-auto md:hidden" onClick={close} aria-label="close menu"><X className="size-5" /></button>
+          <button className="ml-auto md:hidden" onClick={close} aria-label="close menu">
+            <X className="size-5" />
+          </button>
         </div>
-        <nav className="flex flex-col gap-1">
-          {nav.map((n, i) => (
-            <Link key={i} to={n.to} onClick={close} className={n.match ? active : item}>
-              <n.icon className="size-4" /> {n.label}
-            </Link>
-          ))}
-          <div className="my-3 border-t" />
-          <button className={item} onClick={() => { setUI({ panelOpen: true }); close(); }}><Settings className="size-4" /> {t("settings")}</button>
-          <div className="relative">
-            <button className={item} onClick={() => setExp((v) => !v)}><Download className="size-4" /> {t("export")}</button>
-            {exp && <ExportMenu onClose={() => setExp(false)} className="left-2 top-10" />}
+
+        {/* Scrollable nav — fills remaining height */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4">
+          <nav className="flex flex-col gap-1">
+            {nav.map((n, i) => (
+              <Link key={i} to={n.to} onClick={close} className={n.match ? active : item}>
+                <n.icon className="size-4" /> {n.label}
+              </Link>
+            ))}
+            <div className="my-3 border-t" />
+            <button
+              className={item}
+              onClick={() => { setUI({ panelOpen: true }); close(); }}
+            >
+              <Settings className="size-4" /> {t("settings")}
+            </button>
+
+            {/* Export — opens bottom sheet on mobile, dropdown on desktop */}
+            <div className="relative">
+              <button
+                className={item}
+                onClick={() => setExp((v) => !v)}
+                aria-expanded={exp}
+              >
+                <Download className="size-4" /> {t("export")}
+              </button>
+              {exp && (
+                <ExportMenu
+                  onClose={() => setExp(false)}
+                  className="sm:absolute sm:left-0 sm:top-full sm:z-50 sm:mt-1 sm:w-64"
+                />
+              )}
+            </div>
+
+            <button className={item} onClick={exportJson}>
+              <DatabaseBackup className="size-4" /> {t("backup")}
+            </button>
+          </nav>
+
+          {/* Bottom links pushed to the end */}
+          <div className="mt-auto flex flex-col gap-1 pt-4">
+            <div className="border-t mb-2" />
+            <button className={item}><LifeBuoy className="size-4" /> {t("help")}</button>
+            <button className={item}><ShieldCheck className="size-4" /> {t("privacy")}</button>
+            <button className={item}><LogOut className="size-4" /> {t("logout")}</button>
           </div>
-          <button className={item} onClick={exportJson}><DatabaseBackup className="size-4" /> {t("backup")}</button>
-        </nav>
-        <div className="mt-auto flex flex-col gap-1">
-          <button className={item}><LifeBuoy className="size-4" /> {t("help")}</button>
-          <button className={item}><ShieldCheck className="size-4" /> {t("privacy")}</button>
-          <button className={item}><LogOut className="size-4" /> {t("logout")}</button>
         </div>
       </aside>
     </>
@@ -114,7 +152,7 @@ function Topbar() {
       if (!ql) return;
       const m = members.find((x) => x.name.toLowerCase().includes(ql));
       if (m) {
-        if (path !== "/") nav({ to: "/" });
+        if (path !== "/tree") nav({ to: "/tree" });
         setUI({ selectedId: m.id, center: { id: m.id, n: Date.now() } });
       }
     }, 250);

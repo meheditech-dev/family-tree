@@ -11,7 +11,15 @@ export interface UI {
   panelOpen: boolean;
   sidebarOpen: boolean;
   detailsId?: string | undefined;
-  modal?: { mode: "add" | "edit" | undefined; id?: string; relation?: "root" | "child" | "spouse"; relatedTo?: string } | undefined;
+  modal?:
+    | {
+        mode: "add" | "edit" | undefined;
+        id?: string;
+        relation?: "root" | "child" | "spouse";
+        relatedTo?: string;
+      }
+    | undefined;
+  menuId?: string | undefined;
   center?: { id: string | undefined; n: number };
   warning?: string | undefined;
 }
@@ -72,7 +80,10 @@ export function hydrate() {
     if (raw) {
       const d = JSON.parse(raw);
       if (Array.isArray(d.members)) {
-        setState(() => ({ members: d.members, settings: { ...defaultSettings, ...d.settings } }), false);
+        setState(
+          () => ({ members: d.members, settings: { ...defaultSettings, ...d.settings } }),
+          false,
+        );
         return;
       }
     }
@@ -93,15 +104,22 @@ export function useStore<T>(sel: (s: State) => T): T {
   );
 }
 
-export const newId = () => "m" + Date.now().toString(36) + Math.floor(performance.now() * 1000).toString(36);
+export const newId = () =>
+  "m" + Date.now().toString(36) + Math.floor(performance.now() * 1000).toString(36);
 
 export function saveMember(m: Member, relation?: "root" | "child" | "spouse", relatedTo?: string) {
   setState((s) => {
     const exists = s.members.some((x) => x.id === m.id);
-    let members = exists ? s.members.map((x) => (x.id === m.id ? { ...x, ...m } : x)) : [...s.members, m];
+    let members = exists
+      ? s.members.map((x) => (x.id === m.id ? { ...x, ...m } : x))
+      : [...s.members, m];
     if (!exists && relation === "spouse" && relatedTo) {
       members = members.map((x) =>
-        x.id === relatedTo ? { ...x, spouseId: m.id } : x.id === m.id ? { ...x, spouseId: relatedTo, parentId: undefined } : x,
+        x.id === relatedTo
+          ? { ...x, spouseId: m.id }
+          : x.id === m.id
+            ? { ...x, spouseId: relatedTo, parentId: undefined }
+            : x,
       );
     }
     return { members };
@@ -119,7 +137,9 @@ export function deleteMember(id: string) {
       // drop spouse that married in (no own parent) only when removing a descendant chain
       if (sp && !sp.parentId && mid !== id) remove.add(sp.id);
       if (sp && !sp.parentId && mid === id && m?.parentId) remove.add(sp.id);
-      s.members.filter((x) => x.parentId === mid || (sp && x.parentId === sp.id)).forEach((c) => visit(c.id));
+      s.members
+        .filter((x) => x.parentId === mid || (sp && x.parentId === sp.id))
+        .forEach((c) => visit(c.id));
     };
     visit(id);
     const members = s.members
@@ -130,14 +150,21 @@ export function deleteMember(id: string) {
 }
 
 export function resetDemo() {
-  setState((s) => ({ members: makeSeed(), ui: { ...s.ui, selectedId: undefined, detailsId: undefined } }));
+  setState((s) => ({
+    members: makeSeed(),
+    ui: { ...s.ui, selectedId: undefined, detailsId: undefined },
+  }));
 }
 
 export function importMembers(data: unknown): boolean {
   const arr = Array.isArray(data) ? data : (data as { members?: unknown })?.members;
   if (!Array.isArray(arr)) return false;
   const ok = arr.every(
-    (m) => m && typeof m.id === "string" && typeof m.name === "string" && (m.gender === "male" || m.gender === "female"),
+    (m) =>
+      m &&
+      typeof m.id === "string" &&
+      typeof m.name === "string" &&
+      (m.gender === "male" || m.gender === "female"),
   );
   if (!ok) return false;
   setState(() => ({ members: arr as Member[] }));
