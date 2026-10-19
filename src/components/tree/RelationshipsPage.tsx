@@ -10,7 +10,7 @@ import {
   Plus,
   UserPlus,
 } from "lucide-react";
-import { setUI, useStore } from "@/lib/tree/store";
+import { setUI, startNewFamily, useStore } from "@/lib/tree/store";
 import { parentsOf } from "@/lib/tree/types";
 import { analyze, type Unit } from "@/lib/tree/layout";
 import { genVar } from "@/lib/tree/helpers";
@@ -427,18 +427,32 @@ export function RelationshipsPage() {
             )}
 
             {/* New family unit */}
-            <button
-              onClick={() => setUI({ modal: { mode: "add" } })}
-              className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 px-6 py-7 text-primary transition hover:bg-primary/10"
-            >
-              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
-                <Plus className="size-5" />
-              </span>
-              <span className="text-left">
-                <span className="block text-sm font-semibold">{t("newFamilyUnit")}</span>
-                <span className="block text-xs text-primary/70">{t("newFamilyUnitHint")}</span>
-              </span>
-            </button>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <button
+                onClick={() => setUI({ modal: { mode: "add" } })}
+                className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 px-6 py-7 text-primary transition hover:bg-primary/10"
+              >
+                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
+                  <Plus className="size-5" />
+                </span>
+                <span className="text-left">
+                  <span className="block text-sm font-semibold">{t("newFamilyUnit")}</span>
+                  <span className="block text-xs text-primary/70">{t("newFamilyUnitHint")}</span>
+                </span>
+              </button>
+              <button
+                onClick={() => startNewFamily(t("confirmNewFamily"))}
+                className="flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-primary/40 bg-background px-6 py-7 text-primary transition hover:bg-primary/5"
+              >
+                <span className="grid size-10 shrink-0 place-items-center rounded-full border border-primary/40 text-primary">
+                  <Plus className="size-5" />
+                </span>
+                <span className="text-left">
+                  <span className="block text-sm font-semibold">{t("newFamily")}</span>
+                  <span className="block text-xs text-primary/70">{t("newFamilyHint")}</span>
+                </span>
+              </button>
+            </div>
           </>
         )}
       </div>

@@ -1,13 +1,19 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   addMarriage,
+  clearAll,
   deleteMember,
   getState,
   importMembers,
   normalizeRelations,
+  openFamily,
+  clearFamilyFocus,
   removeMarriage,
+  resetDemo,
   saveMember,
+  startNewFamily,
 } from "@/lib/tree/store";
+import { buildFamilyGroups, collectFamilyIds } from "@/lib/tree/families";
 
 const legacy = () => [
   { id: "f", name: "Father", gender: "male" as const, parentId: undefined, spouseId: "s1" },
@@ -62,5 +68,61 @@ describe("relation normalization", () => {
     expect(ids).toContain("c2");
     expect(ids).toContain("s2");
     expect(getState().members.find((m) => m.id === "f")!.spouseIds).toEqual(["s1", "s2"]);
+  });
+  it("adds a separate root family alongside existing members", () => {
+    importMembers(legacy());
+    saveMember({ id: "new-root", name: "New Family Head", gender: "male" }, "root");
+    const ids = getState().members.map((m) => m.id);
+    expect(ids).toContain("new-root");
+    expect(ids).toContain("f");
+    const added = getState().members.find((m) => m.id === "new-root")!;
+    expect(added.parentIds).toBeUndefined();
+    expect(added.spouseIds).toBeUndefined();
+  });
+  it("clears all members after demo data so a fresh family can start", () => {
+    resetDemo();
+    expect(getState().members.length).toBeGreaterThan(0);
+    clearAll();
+    expect(getState().members).toEqual([]);
+    saveMember({ id: "fresh-root", name: "Fresh Start", gender: "female" }, "root");
+    expect(getState().members.map((m) => m.id)).toEqual(["fresh-root"]);
+  });
+  it("startNewFamily removes loaded demo data and opens a blank root form", () => {
+    resetDemo();
+    expect(getState().members.length).toBeGreaterThan(0);
+    vi.stubGlobal("confirm", () => true);
+    // jsdom has no window.confirm by default; simulate user accepting.
+    (window as unknown as { confirm: (m: string) => boolean }).confirm = () => true;
+    expect(startNewFamily("confirm?")).toBe(true);
+    expect(getState().members).toEqual([]);
+    expect(getState().ui.modal).toEqual({ mode: "add", relation: "root" });
+    saveMember({ id: "her-root", name: "Her Family", gender: "female" }, "root");
+    expect(getState().members.map((m) => m.id)).toEqual(["her-root"]);
+    vi.unstubAllGlobals();
+  });
+  it("startNewFamily keeps loaded data when the user cancels", () => {
+    resetDemo();
+    const before = getState().members.length;
+    (window as unknown as { confirm: (m: string) => boolean }).confirm = () => false;
+    expect(startNewFamily("confirm?")).toBe(false);
+    expect(getState().members.length).toBe(before);
+    delete (window as unknown as { confirm?: unknown }).confirm;
+  });
+  it("openFamily focuses one family line so the tree shows only that family", () => {
+    resetDemo();
+    const groups = buildFamilyGroups(getState().members);
+    expect(groups.length).toBeGreaterThan(0);
+    const first = groups[0]!;
+    openFamily(first.root.id);
+    expect(getState().ui.focusedRootId).toBe(first.root.id);
+    const ids = collectFamilyIds(getState().members, first.root.id);
+    expect(ids).not.toBeNull();
+    expect(ids!.size).toBe(first.size);
+    // Every other family line is disjoint.
+    for (const g of groups.slice(1)) {
+      for (const id of g.memberIds) expect(ids!.has(id)).toBe(false);
+    }
+    clearFamilyFocus();
+    expect(getState().ui.focusedRootId).toBeUndefined();
   });
 });

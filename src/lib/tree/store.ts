@@ -12,6 +12,8 @@ export interface UI {
   panelOpen: boolean;
   sidebarOpen: boolean;
   detailsId?: string | undefined;
+  /** When set, the tree canvas shows only this family line (FamilyPage card drill-in). */
+  focusedRootId?: string | undefined;
   modal?:
     | {
         mode: "add" | "edit" | undefined;
@@ -165,7 +167,11 @@ export function saveMember(m: Member, relation?: "root" | "child" | "spouse", re
             : x,
       );
     }
-    return { members: normalizeRelations(members) };
+    // A brand-new separate root starts its own family line — don't keep the
+    // old family filter, otherwise the new person would be invisible.
+    const focusedRootId =
+      !exists && relation === "root" ? undefined : s.ui.focusedRootId;
+    return { members: normalizeRelations(members), ui: { ...s.ui, focusedRootId } };
   });
 }
 
@@ -235,15 +241,56 @@ export function deleteMember(id: string) {
           parentIds: parentsOf(x).filter((o) => !remove.has(o)),
         })),
     );
-    return { members, ui: { ...s.ui, detailsId: undefined, selectedId: undefined } };
+    const focusedRootId = remove.has(s.ui.focusedRootId ?? "") ? undefined : s.ui.focusedRootId;
+    return {
+      members,
+      ui: { ...s.ui, detailsId: undefined, selectedId: undefined, focusedRootId },
+    };
   });
 }
 
 export function resetDemo() {
   setState((s) => ({
     members: normalizeRelations(makeSeed()),
-    ui: { ...s.ui, selectedId: undefined, detailsId: undefined },
+    ui: { ...s.ui, selectedId: undefined, detailsId: undefined, focusedRootId: undefined },
   }));
+}
+
+export function clearAll() {
+  setState((s) => ({
+    members: [],
+    ui: { ...s.ui, selectedId: undefined, detailsId: undefined, focusedRootId: undefined },
+  }));
+}
+
+/**
+ * "New Family" — clears the loaded/demo data and opens a blank tree so the
+ * user can create her own family from scratch. Returns false when the user
+ * cancels the confirm dialog.
+ */
+export function startNewFamily(confirmMsg?: string): boolean {
+  const msg = confirmMsg ?? "Start a new family? The currently loaded data will be removed.";
+  if (typeof window !== "undefined" && getState().members.length > 0) {
+    try {
+      if (!window.confirm(msg)) return false;
+    } catch {
+      /* non-browser / test env: proceed */
+    }
+  }
+  clearAll();
+  setUI({ modal: { mode: "add", relation: "root" } });
+  return true;
+}
+
+/** Drill into one family line: the tree canvas shows only that family. */
+export function openFamily(rootId: string) {
+  setState((s) => ({
+    ui: { ...s.ui, focusedRootId: rootId, selectedId: rootId, detailsId: undefined },
+  }));
+}
+
+export function clearFamilyFocus() {
+  setUI({ focusedRootId: undefined });
 }
 
 export function importMembers(data: unknown): boolean {

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useStore, setSettings, getState } from "@/lib/tree/store";
 import { analyze, edgePath, layoutTree, layoutTreeHorizontal } from "@/lib/tree/layout";
+import { collectFamilyIds } from "@/lib/tree/families";
 import { relationKey } from "@/lib/tree/helpers";
 import { cardDimensions, checkOverlaps } from "@/lib/tree/export-geometry";
 import type { TreeLayout } from "@/lib/tree/types";
@@ -21,7 +22,7 @@ export function TreeCanvas({
   containerRef: React.RefObject<HTMLDivElement | null>;
   treeLayout?: TreeLayout;
 }) {
-  const members  = useStore((s) => s.members);
+  const allMembers  = useStore((s) => s.members);
   const settings = useStore((s) => s.settings);
   const ui       = useStore((s) => s.ui);
   const [pan, setPan] = useState({ x: 60, y: 60 });
@@ -30,6 +31,14 @@ export function TreeCanvas({
 
   const horizontal = treeLayout === "horizontal";
   const cardMode   = horizontal ? "horizontal" : "vertical";
+
+  // When the user drills in from a FamilyPage card, show ONLY that family line.
+  const members = useMemo(() => {
+    if (!ui.focusedRootId) return allMembers;
+    const ids = collectFamilyIds(allMembers, ui.focusedRootId);
+    if (!ids) return allMembers;
+    return allMembers.filter((m) => ids.has(m.id));
+  }, [allMembers, ui.focusedRootId]);
 
   // Card dimensions come from the shared constant — layout engine and
   // render layer always agree.

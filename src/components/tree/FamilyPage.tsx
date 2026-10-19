@@ -1,11 +1,11 @@
 import { useMemo } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
 import { Heart, Layers, Layout, Leaf, Plus, Sprout, Users } from "lucide-react";
-import { setUI, useStore } from "@/lib/tree/store";
-import { parentsOf, spousesOf } from "@/lib/tree/types";
+import { openFamily, setUI, startNewFamily, useStore } from "@/lib/tree/store";
 import { useT } from "@/lib/tree/i18n";
 import { analyze } from "@/lib/tree/layout";
+import { buildFamilyGroups } from "@/lib/tree/families";
 
 type Tone = "primary" | "accent" | "secondary" | "muted";
 
@@ -49,6 +49,7 @@ function Fact({ value, label }: { value: number; label: string }) {
 
 export function FamilyPage() {
   const t = useT();
+  const nav = useNavigate();
   const members = useStore((s) => s.members);
 
   const a = useMemo(() => analyze(members), [members]);
@@ -58,86 +59,19 @@ export function FamilyPage() {
   const livingPct = members.length ? Math.round((living / members.length) * 100) : 0;
 
   // One card per family line: the eldest known couple and everyone below them.
-  const families = useMemo(() => {
-    type M = (typeof members)[number];
-    type Id = M["id"];
+  const families = useMemo(
+    () => buildFamilyGroups(members).sort((x, y) => y.size - x.size),
+    [members],
+  );
 
-    const byId = new Map<Id, M>(members.map((m) => [m.id, m]));
-    const kids = new Map<Id, M[]>();
-    members.forEach((m) => {
-      for (const p of parentsOf(m)) kids.set(p, [...(kids.get(p) ?? []), m]);
-    });
-    const spouseList = (m: M) => spousesOf(m).filter((s) => byId.has(s));
+  const openOnlyFamily = (rootId: string) => {
+    openFamily(rootId);
+    void nav({ to: "/tree" });
+  };
 
-    // Someone who married into a family has no parent here, but a spouse does.
-    const marriedIn = (m: M) =>
-      !parentsOf(m).some((p) => byId.has(p)) &&
-      spouseList(m).some((s) => parentsOf(byId.get(s)!).some((p) => byId.has(p)));
-
-    const seen = new Set<Id>();
-    const out: {
-      root: M;
-      spouse?: M;
-      extraSpouses: number;
-      size: number;
-      depth: number;
-      living: number;
-    }[] = [];
-
-    // Man's perspective: of a couple with no parents here, the male partner
-    // heads the family line, regardless of who was added first.
-    const ordered = members
-      .map((m, i) => [m, i] as const)
-      .sort(([a, ai], [b, bi]) =>
-        a.gender === b.gender ? ai - bi : a.gender === "male" ? -1 : 1,
-      )
-      .map(([m]) => m);
-
-    for (const root of ordered) {
-      if (parentsOf(root).some((p) => byId.has(p)) || marriedIn(root) || seen.has(root.id)) continue;
-      const spouses = spouseList(root).map((s) => byId.get(s)!);
-
-      seen.add(root.id);
-      const people = new Set<Id>([root.id]);
-      const queue: M[] = [root];
-      for (const spouse of spouses) {
-        seen.add(spouse.id);
-        people.add(spouse.id);
-        queue.push(spouse);
-      }
-
-      while (queue.length) {
-        const cur = queue.shift()!;
-        for (const child of kids.get(cur.id) ?? []) {
-          if (people.has(child.id)) continue;
-          people.add(child.id);
-          queue.push(child);
-          for (const csId of spouseList(child)) {
-            const cs = byId.get(csId)!;
-            if (!people.has(cs.id)) {
-              people.add(cs.id);
-              queue.push(cs);
-            }
-          }
-        }
-      }
-
-      const ids = [...people];
-      const gens = ids.map((id) => a.gen.get(id) ?? 0);
-      const maxGen = gens.length ? gens.reduce((a, b) => Math.max(a, b)) : 0;
-      const minGen = gens.length ? gens.reduce((a, b) => Math.min(a, b)) : 0;
-      out.push({
-        root,
-        ...(spouses.length !== 0 && { spouse: spouses[0] }),
-        extraSpouses: Math.max(0, spouses.length - 1),
-        size: ids.length,
-        depth: maxGen - minGen + 1,
-        living: ids.filter((id) => !byId.get(id)?.deathYear).length,
-      });
-    }
-
-    return out.sort((x, y) => y.size - x.size);
-  }, [members, a]);
+  const handleNewFamily = () => {
+    if (startNewFamily(t("confirmNewFamily"))) void nav({ to: "/tree" });
+  };
 
   return (
     <div className="h-full overflow-y-auto bg-gradient-to-b from-primary/5 via-background to-background">
@@ -231,13 +165,14 @@ export function FamilyPage() {
                     <Fact value={f.living} label={t("living")} />
                   </div>
 
-                  <Link
-                    to="/tree"
+                  <button
+                    type="button"
+                    onClick={() => openOnlyFamily(f.root.id)}
                     className="mt-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-input bg-background px-4 py-2.5 text-sm font-medium text-primary transition hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     <Layout className="size-4" />
                     {t("openFamilyTree")}
-                  </Link>
+                  </button>
                 </article>
               ))}
             </div>
@@ -246,13 +181,17 @@ export function FamilyPage() {
 
         {/* Actions */}
         <section className="flex flex-wrap items-center justify-center gap-3">
-          <Link
-            to="/tree"
+          <button
+            type="button"
+            onClick={() => {
+              setUI({ focusedRootId: undefined });
+              void nav({ to: "/tree" });
+            }}
             className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <Layout className="size-4" />
             {t("openFamilyTree")}
-          </Link>
+          </button>
           <Link
             to="/members"
             className="inline-flex items-center gap-2 rounded-2xl border border-input bg-background px-6 py-3 text-sm font-medium transition hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -268,6 +207,17 @@ export function FamilyPage() {
             <Plus className="size-4" />
             {t("addMember")}
           </button>
+          {members.length > 0 && (
+            <button
+              type="button"
+              onClick={handleNewFamily}
+              title={t("newFamilyHint")}
+              className="inline-flex items-center gap-2 rounded-2xl border border-dashed border-primary/50 bg-primary/5 px-6 py-3 text-sm font-semibold text-primary transition hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <Sprout className="size-4" />
+              {t("newFamily")}
+            </button>
+          )}
         </section>
       </div>
     </div>

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
 import { Heart, Layers, Layout, Leaf, Palette, Plus, Sprout, Users } from "lucide-react";
-import { setUI, useStore } from "@/lib/tree/store";
+import { setUI, startNewFamily, useStore } from "@/lib/tree/store";
 import { useT } from "@/lib/tree/i18n";
 import { analyze } from "@/lib/tree/layout";
 
@@ -124,6 +124,16 @@ export function HomePage() {
               <Plus className="size-4" />
               {t("addMember")}
             </button>
+            {!isEmpty && (
+              <button
+                type="button"
+                onClick={() => startNewFamily(t("confirmNewFamily"))}
+                className="inline-flex items-center gap-2 rounded-2xl border border-dashed border-primary/50 bg-primary/5 px-6 py-3 text-sm font-semibold text-primary transition hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <Sprout className="size-4" />
+                {t("newFamily")}
+              </button>
+            )}
           </div>
         </section>
 

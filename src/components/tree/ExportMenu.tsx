@@ -15,7 +15,7 @@
 import { useRef, useState, useEffect, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "@tanstack/react-router";
-import { importMembers, resetDemo } from "@/lib/tree/store";
+import { clearAll, importMembers, resetDemo } from "@/lib/tree/store";
 import { useT } from "@/lib/tree/i18n";
 import {
   exportJson,
@@ -303,6 +303,20 @@ export function ExportMenu({
           >
             <RotateCcw className="size-4 shrink-0" />
             <span className="flex-1">{t("resetDemo")}</span>
+          </button>
+
+          <button
+            className={`${btnCls} text-destructive`}
+            disabled={busy}
+            onClick={() => {
+              if (confirm(t("confirmClear"))) {
+                clearAll();
+                onClose();
+              }
+            }}
+          >
+            <X className="size-4 shrink-0" />
+            <span className="flex-1">{t("startFresh")}</span>
           </button>
 
           {/* iOS home-bar safe area */}

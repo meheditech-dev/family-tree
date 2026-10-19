@@ -232,6 +232,11 @@ export function MemberModal() {
                     </select>
                   </L>
                 )}
+                {rel === "root" && members.length > 0 && (
+                  <p className="col-span-2 rounded-lg bg-muted/60 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+                    {t("newFamilyLineHint")}
+                  </p>
+                )}
                 {rel === "child" && relatedSpouses.length > 0 && (
                   <L label={t("secondParent")}>
                     <select className={input} value={to2} onChange={(e) => setTo2(e.target.value)}>

@@ -89,7 +89,12 @@ function Sidebar() {
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4">
           <nav className="flex flex-col gap-1">
             {nav.map((n, i) => (
-              <Link key={i} to={n.to} onClick={close} className={n.match ? active : item}>
+              <Link
+                key={i}
+                to={n.to}
+                onClick={() => setUI({ sidebarOpen: false, focusedRootId: undefined })}
+                className={n.match ? active : item}
+              >
                 <n.icon className="size-4" /> {n.label}
               </Link>
             ))}
@@ -147,7 +152,7 @@ function Topbar() {
   const timer = useRef<number>(undefined);
 
   const onSearch = (q: string) => {
-    setUI({ search: q });
+    setUI({ search: q, focusedRootId: undefined });
     window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => {
       const ql = q.trim().toLowerCase();
