@@ -339,6 +339,20 @@ function buildTreeSVG(horizontal: boolean): SVGSVGElement {
   const lineStyle = settings.lineStyle;
 
   for (const l of layout.spouseLinks) {
+    // Hub links are diagonal (hub above → spouse below); couple links are inline.
+    const isHub = horizontal ? l.x1 !== l.x2 : l.y1 !== l.y2;
+    if (isHub) {
+      const ln = svgEl("path");
+      set(ln, {
+        d: `M${l.x1},${l.y1} L${l.x2},${l.y2}`,
+        fill: "none",
+        stroke: pri,
+        "stroke-width": 2,
+        "stroke-dasharray": "4 3",
+        opacity: 0.6,
+      });
+      connG.appendChild(ln);
+    }
     const h = svgEl("path");
     set(h, {
       d: HEART_PATH,

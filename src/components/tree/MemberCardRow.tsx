@@ -102,7 +102,7 @@ export const MemberCardRow = memo(function MemberCardRow({
       }}
       style={{ left: x, top: y, width: w, height: h, opacity: dim ? 0.25 : 1 }}
       className={[
-        "absolute flex items-center overflow-hidden",
+        "absolute flex items-center",
         "rounded-xl border-[1.5px] bg-card",
         "shadow-[var(--shadow-card)] outline-none",
         "focus-visible:ring-2 focus-visible:ring-ring",
@@ -113,7 +113,7 @@ export const MemberCardRow = memo(function MemberCardRow({
     >
       {/* Left gender/status colour strip */}
       <div
-        className={`${stripCls} h-full shrink-0`}
+        className={`${stripCls} h-full shrink-0 rounded-l-[10px]`}
         style={{ width: STRIP_W }}
         aria-hidden="true"
       />

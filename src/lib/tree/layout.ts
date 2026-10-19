@@ -50,12 +50,19 @@ export function analyze(members: Member[]): Analysis {
   }
 
   // A person who married in (no parents here) renders inside their spouse's block.
+  // Man's perspective: when both partners of a rootless couple are equally
+  // unanchored, the male partner leads and his wife renders beside him.
+  // The rank is a total order (male before female, then entry order) so
+  // exactly one partner of each couple comes out on top.
   const secondary = new Set<string>();
+  const rankOf = (id: string) => (byId.get(id)?.gender === "male" ? 0 : 1);
   for (const m of members) {
     const sps = spouseIdsOf.get(m.id) ?? [];
     if (!sps.length || (parentIdsOf.get(m.id)?.length ?? 0) > 0) continue;
     const senior = (s: string) =>
-      (parentIdsOf.get(s)?.length ?? 0) > 0 || (index.get(s) ?? 0) < (index.get(m.id) ?? 0);
+      (parentIdsOf.get(s)?.length ?? 0) > 0 ||
+      rankOf(s) < rankOf(m.id) ||
+      (rankOf(s) === rankOf(m.id) && (index.get(s) ?? 0) < (index.get(m.id) ?? 0));
     if (sps.some(senior)) secondary.add(m.id);
   }
   const primaryOf = (id: string) => {
@@ -81,8 +88,20 @@ export function analyze(members: Member[]): Analysis {
       seenPair.add(key);
       const mOwn = !secondary.has(m.id);
       const spOwn = !secondary.has(sp);
+      const mMale = byId.get(m.id)?.gender === "male" && byId.get(sp)?.gender !== "male";
+      const spMale = byId.get(sp)?.gender === "male" && byId.get(m.id)?.gender !== "male";
       const anchor =
-        mOwn && !spOwn ? m.id : spOwn && !mOwn ? sp : (index.get(m.id) ?? 0) <= (index.get(sp) ?? 0) ? m.id : sp;
+        mOwn && !spOwn
+          ? m.id
+          : spOwn && !mOwn
+            ? sp
+            : mMale
+              ? m.id
+              : spMale
+                ? sp
+                : (index.get(m.id) ?? 0) <= (index.get(sp) ?? 0)
+                  ? m.id
+                  : sp;
       const other = anchor === m.id ? sp : m.id;
       marriages.push({ id: key, partners: [anchor, other] });
       const owner = primaryOf(anchor);

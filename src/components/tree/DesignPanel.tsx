@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { ACCENTS } from "@/lib/tree/types";
 import { setSettings, setUI, useStore } from "@/lib/tree/store";
@@ -7,10 +8,28 @@ export function DesignPanel() {
   const t = useT();
   const s = useStore((st) => st.settings);
   const open = useStore((st) => st.ui.panelOpen);
+  const ref = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setUI({ panelOpen: false });
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setUI({ panelOpen: false });
+    };
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
   if (!open) return null;
   const seg = (on: boolean) => `flex-1 rounded-md py-1.5 text-sm ${on ? "bg-card font-semibold shadow-[var(--shadow-card)]" : "text-muted-foreground"}`;
   return (
-    <aside className="no-print absolute inset-x-0 bottom-0 z-30 max-h-[80%] overflow-auto rounded-t-2xl border bg-card p-5 shadow-[var(--shadow-float)] md:inset-x-auto md:bottom-auto md:right-4 md:top-4 md:w-64 md:rounded-2xl">
+    <aside ref={ref} className="no-print absolute inset-x-0 bottom-0 z-30 max-h-[80%] overflow-auto rounded-t-2xl border bg-card p-5 shadow-[var(--shadow-float)] md:inset-x-auto md:bottom-auto md:right-4 md:top-4 md:w-64 md:rounded-2xl">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="font-bold">{t("design")}</h2>
         <button aria-label="close" onClick={() => setUI({ panelOpen: false })} className="rounded-md p-1 hover:bg-muted"><X className="size-4" /></button>

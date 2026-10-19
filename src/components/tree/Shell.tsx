@@ -52,6 +52,7 @@ function Sidebar() {
   const open = useStore((s) => s.ui.sidebarOpen);
   const path = useRouterState({ select: (s) => s.location.pathname });
   const [exp, setExp] = useState(false);
+  const exportBtnRef = useRef<HTMLButtonElement>(null);
   const close = () => setUI({ sidebarOpen: false });
   const item = "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground border-l-[3px] border-transparent";
   const active = "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold bg-accent text-accent-foreground border-l-[3px] border-primary";
@@ -100,9 +101,10 @@ function Sidebar() {
               <Settings className="size-4" /> {t("settings")}
             </button>
 
-            {/* Export — opens bottom sheet on mobile, dropdown on desktop */}
+            {/* Export — opens bottom sheet on mobile, floating panel on desktop */}
             <div className="relative">
               <button
+                ref={exportBtnRef}
                 className={item}
                 onClick={() => setExp((v) => !v)}
                 aria-expanded={exp}
@@ -112,7 +114,7 @@ function Sidebar() {
               {exp && (
                 <ExportMenu
                   onClose={() => setExp(false)}
-                  className="sm:absolute sm:left-0 sm:top-full sm:z-50 sm:mt-1 sm:w-64"
+                  anchorRef={exportBtnRef}
                 />
               )}
             </div>

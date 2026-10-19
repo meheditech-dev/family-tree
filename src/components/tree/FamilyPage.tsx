@@ -84,7 +84,16 @@ export function FamilyPage() {
       living: number;
     }[] = [];
 
-    for (const root of members) {
+    // Man's perspective: of a couple with no parents here, the male partner
+    // heads the family line, regardless of who was added first.
+    const ordered = members
+      .map((m, i) => [m, i] as const)
+      .sort(([a, ai], [b, bi]) =>
+        a.gender === b.gender ? ai - bi : a.gender === "male" ? -1 : 1,
+      )
+      .map(([m]) => m);
+
+    for (const root of ordered) {
       if (parentsOf(root).some((p) => byId.has(p)) || marriedIn(root) || seen.has(root.id)) continue;
       const spouses = spouseList(root).map((s) => byId.get(s)!);
 

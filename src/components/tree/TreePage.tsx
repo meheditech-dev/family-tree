@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Plus, Crosshair, Search, Minus, Maximize, SlidersHorizontal } from "lucide-react";
+import { Plus, Crosshair, Search, Minus, Maximize, SlidersHorizontal, Sprout } from "lucide-react";
 import { getState, setSettings, setUI, useStore } from "@/lib/tree/store";
 import { useT } from "@/lib/tree/i18n";
 import type { TreeLayout } from "@/lib/tree/types";
@@ -9,6 +9,7 @@ import { DesignPanel } from "@/components/tree/DesignPanel";
 export function TreePage() {
   const t = useT();
   const ref = useRef<HTMLDivElement>(null);
+  const members = useStore((s) => s.members);
   const genFilter = useStore((s) => s.ui.genFilter);
   const zoom = useStore((s) => s.settings.zoom);
   const treeLayout = useStore((s) => s.settings.treeLayout);
@@ -82,6 +83,23 @@ export function TreePage() {
       </div>
       <div className="relative min-h-0 flex-1">
         <TreeCanvas containerRef={ref} treeLayout={treeLayout} />
+        {members.length === 0 && (
+          <div className="absolute inset-0 z-10 grid place-items-center p-6">
+            <div className="no-print flex max-w-sm flex-col items-center gap-4 rounded-3xl border border-dashed border-primary/30 bg-card/80 px-8 py-10 text-center shadow-[var(--shadow-card)] backdrop-blur-sm">
+              <span className="grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary">
+                <Sprout className="size-7" />
+              </span>
+              <h3 className="text-xl font-semibold">{t("emptyTitle")}</h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">{t("emptyDesc")}</p>
+              <button
+                onClick={() => setUI({ modal: { mode: "add" } })}
+                className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
+              >
+                <Plus className="size-4" /> {t("addMember")}
+              </button>
+            </div>
+          </div>
+        )}
         <DesignPanel />
         <Legend />
         <div className="no-print absolute bottom-4 right-4 z-20 hidden items-center gap-1 rounded-full border bg-card p-1 shadow-[var(--shadow-card)] md:flex">

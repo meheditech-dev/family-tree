@@ -87,6 +87,28 @@ describe("multiple marriages", () => {
   });
 });
 
+describe("man's perspective anchoring", () => {
+  const wifeFirst: Member[] = [
+    { id: "w", name: "W", gender: "female", birthYear: 1960, spouseIds: ["h"] },
+    { id: "h", name: "H", gender: "male", birthYear: 1958, spouseIds: ["w"] },
+    { id: "c", name: "C", gender: "male", birthYear: 1985, parentIds: ["w", "h"] },
+  ];
+  it("anchors a rootless couple on the male partner regardless of entry order", () => {
+    const a = analyze(wifeFirst);
+    expect(a.roots).toEqual(["h"]);
+    expect(a.secondary.has("w")).toBe(true);
+    expect(a.secondary.has("h")).toBe(false);
+  });
+  it("renders the male partner first, wife beside him on the same row", () => {
+    const l = layoutTree(wifeFirst, o);
+    const h = l.nodes.find((n) => n.id === "h")!;
+    const w = l.nodes.find((n) => n.id === "w")!;
+    expect(h.y).toBe(w.y);
+    expect(h.x).toBeLessThan(w.x);
+    expect(l.spouseLinks.length).toBe(1);
+  });
+});
+
 describe("layoutTree", () => {
   it("assigns generations, marriages and married-in spouses", () => {
     const a = analyze(stress);

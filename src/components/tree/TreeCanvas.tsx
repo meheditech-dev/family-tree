@@ -209,14 +209,29 @@ export function TreeCanvas({
           width={layout.width}
           height={layout.height}
         >
-          {layout.spouseLinks.map((l, i) => (
-            <path
-              key={i}
-              d={HEART_PATH}
-              transform={`translate(${(l.x1 + l.x2) / 2 - 8}, ${(l.y1 + l.y2) / 2 - 8})`}
-              fill="var(--love)"
-            />
-          ))}
+          {layout.spouseLinks.map((l, i) => {
+            // Hub links are diagonal (hub above → spouse below); couple links are inline.
+            const isHub = horizontal ? l.x1 !== l.x2 : l.y1 !== l.y2;
+            return (
+              <g key={i}>
+                {isHub && (
+                  <path
+                    d={`M${l.x1},${l.y1} L${l.x2},${l.y2}`}
+                    fill="none"
+                    stroke="var(--primary)"
+                    strokeWidth={2}
+                    strokeDasharray="4 3"
+                    opacity={0.6}
+                  />
+                )}
+                <path
+                  d={HEART_PATH}
+                  transform={`translate(${(l.x1 + l.x2) / 2 - 8}, ${(l.y1 + l.y2) / 2 - 8})`}
+                  fill="var(--love)"
+                />
+              </g>
+            );
+          })}
           {layout.edges.map((e) => (
             <g key={e.childId} opacity={dimOf(e.childId) ? 0.2 : 1}>
               <path

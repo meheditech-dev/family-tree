@@ -145,7 +145,7 @@ const dict = {
   ],
   close: ["বন্ধ করুন", "Close"],
   importJson: ["JSON ইমপোর্ট", "Import JSON"],
-  resetDemo: ["ডেমো ডেটা রিসেট", "Reset demo data"],
+  resetDemo: ["নমুনা ডেটা লোড করুন", "Load sample data"],
   quota: ["স্টোরেজ পূর্ণ! পরিবর্তন সংরক্ষণ হয়নি।", "Storage full! Changes were not saved."],
   invalidFile: ["অবৈধ ফাইল", "Invalid file"],
   couples: ["দম্পতি", "Couples"],
@@ -197,6 +197,36 @@ const dict = {
     "How many of your family are still with us.",
   ],
   noFamilies: ["এখনো কোনো পরিবারধারা পাওয়া যায়নি", "No family lines found yet"],
+  // RelationshipsPage keys
+  relSubtitle: [
+    "পরিবারের সব সম্পর্ক এক নজরে — কে কার সঙ্গে যুক্ত, কত সন্তান, কোন প্রজন্ম",
+    "All family relationships at a glance — who links to whom, how many children, which generation.",
+  ],
+  sortList: ["তালিকা ↑↓", "List ↑↓"],
+  newRelation: ["নতুন সম্পর্ক", "New relationship"],
+  coupleLinks: ["বাবা-মা ও সন্তান সংযোগ", "Parent-child connections"],
+  incomplete: ["অসম্পূর্ণ তথ্য", "Incomplete info"],
+  allFamilies: ["সব পরিবার", "All families"],
+  selectedMember: ["নির্বাচিত সদস্য", "Selected member"],
+  watchlist: ["লক্ষ্য করুন", "Watchlist"],
+  spouseMissing: [
+    "{name} এর স্ত্রী/স্বামীর তথ্য নেই, অথচ {n} সন্তান যুক্ত আছে।",
+    "{name} has no spouse listed, yet {n} linked {kids}.",
+  ],
+  bigFamily: [
+    "সন্দেহজনক বড় পরিবার: {a} ও {b} ({n} সন্তান)",
+    "Suspiciously large family: {a} & {b} ({n} children)",
+  ],
+  singleGuardian: ["একক অভিভাবক", "Single guardian"],
+  addSpouseInfo: ["স্বামী/স্ত্রীর তথ্য যোগ করুন", "Add spouse info"],
+  newFamilyUnit: ["নতুন পরিবার ইউনিট", "New family unit"],
+  newFamilyUnitHint: ["দম্পতি বা সন্তান যোগ করুন", "Add a couple or a child"],
+  allComplete: ["সব তথ্য সম্পূর্ণ দেখা যাচ্ছে", "All details look complete"],
+  noUnits: ["এখনো কোনো পরিবার ইউনিট নেই", "No family units yet"],
+  noRelationsHint: [
+    "প্রথম সদস্য যোগ করুন, তারপর জীবনসঙ্গী ও সন্তান যোগ করলে এখানে সব সম্পর্ক দেখা যাবে।",
+    "Add a first member, then their spouse and children to see every relationship here.",
+  ],
 } as const;
 
 export type TKey = keyof typeof dict;

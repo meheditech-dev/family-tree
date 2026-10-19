@@ -3,7 +3,7 @@ import type { Member, Settings } from "./types";
 import { parentsOf, spousesOf } from "./types";
 import { makeSeed } from "./seed";
 
-const KEY = "treemind_v1";
+const KEY = "treemind_v2";
 
 export interface UI {
   selectedId?: string | undefined;
@@ -75,9 +75,11 @@ export function normalizeRelations(members: Member[]): Member[] {
 }
 
 let state: State = {
-  members: normalizeRelations(makeSeed()),
+  // New users start with an empty tree and build their own family;
+  // demo data is only loaded on demand via resetDemo().
+  members: normalizeRelations([]),
   settings: defaultSettings,
-  ui: { search: "", genFilter: 0, panelOpen: true, sidebarOpen: false },
+  ui: { search: "", genFilter: 0, panelOpen: false, sidebarOpen: false },
 };
 const listeners = new Set<() => void>();
 

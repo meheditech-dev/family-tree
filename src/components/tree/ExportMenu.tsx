@@ -1,23 +1,19 @@
 /**
- * ExportMenu – cross-device export panel
+ * ExportMenu – dropdown export panel, anchored to the trigger button
  *
- * ┌─ Mobile (< 640 px) ──────────────────────────────────┐
- * │  Fixed bottom sheet, slides up, max 88dvh, scrollable│
- * │  Semi-opaque full-screen backdrop                     │
- * └──────────────────────────────────────────────────────┘
- *
- * ┌─ Desktop (≥ 640 px) ─────────────────────────────────┐
- * │  Absolute floating panel anchored by the caller's     │
- * │  `relative` parent. Width / position set by className │
- * │  e.g. "sm:w-64 sm:left-0 sm:top-full sm:mt-1"        │
- * └──────────────────────────────────────────────────────┘
+ * On every device the panel opens like a dropdown: fixed below the trigger
+ * button, flipping above it when there is no room, clamped inside the
+ * viewport with an internal scroll area. It is portaled to <body> so no
+ * ancestor overflow container can clip it, and it follows the button when
+ * the sidebar scrolls.
  *
  * Download strategy (deliver-file.ts):
  *   iOS/Android  → Web Share API  (navigator.share)
  *   Desktop      → <a download>   (Blob URL)
  *   Fallback     → window.open    (new tab, user saves manually)
  */
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "@tanstack/react-router";
 import { importMembers, resetDemo } from "@/lib/tree/store";
 import { useT } from "@/lib/tree/i18n";
@@ -47,13 +43,13 @@ import {
 export function ExportMenu({
   onClose,
   className = "",
+  anchorRef,
 }: {
   onClose: () => void;
-  /** Extra classes applied to the panel.
-   *  On desktop use absolute positioning, e.g.:
-   *  "sm:absolute sm:left-0 sm:top-full sm:mt-1 sm:w-64 sm:z-50"
-   */
+  /** Extra classes applied to the panel (e.g. width on desktop). */
   className?: string;
+  /** Trigger button — the dropdown anchors itself to this element. */
+  anchorRef?: React.RefObject<HTMLButtonElement | null>;
 }) {
   const t       = useT();
   const nav     = useNavigate();
@@ -64,6 +60,43 @@ export function ExportMenu({
   const [failed,      setFailed]      = useState(false);
   const [errorMsg,    setErrorMsg]    = useState("");
   const [showPdfOpts, setShowPdfOpts] = useState(false);
+  const [pos,         setPos]         = useState<{
+    top: number;
+    left: number;
+    maxH: number;
+    arrowX: number;
+    up: boolean;
+  } | null>(null);
+
+  // Dropdown behaviour on every device: the panel hangs below the trigger
+  // button, flips above it when there is no room, and follows it on scroll.
+  useLayoutEffect(() => {
+    const PANEL_W = 288;
+    const compute = () => {
+      const r = anchorRef?.current?.getBoundingClientRect();
+      const maxH = Math.min(420, window.innerHeight - 16);
+      if (!r) {
+        setPos({ top: 8, left: 8, maxH, arrowX: PANEL_W / 2, up: false });
+        return;
+      }
+      const below = r.bottom + 6;
+      const up = below + maxH > window.innerHeight - 8;
+      const top = up ? Math.max(8, r.top - 6 - maxH) : below;
+      const left = Math.max(8, Math.min(r.left, window.innerWidth - PANEL_W - 8));
+      const arrowX = Math.max(14, Math.min(r.left + r.width / 2 - left, PANEL_W - 14));
+      setPos({ top, left, maxH, arrowX, up });
+    };
+    compute();
+    window.addEventListener("resize", compute);
+    window.addEventListener("scroll", compute, true);
+    // The mobile sidebar slides in with a transition; re-measure when it lands.
+    anchorRef?.current?.addEventListener("transitionend", compute);
+    return () => {
+      window.removeEventListener("resize", compute);
+      window.removeEventListener("scroll", compute, true);
+      anchorRef?.current?.removeEventListener("transitionend", compute);
+    };
+  }, [anchorRef]);
 
   // Close on Escape
   useEffect(() => {
@@ -110,39 +143,40 @@ export function ExportMenu({
     "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm " +
     "hover:bg-muted transition-colors disabled:opacity-50 disabled:pointer-events-none";
 
-  return (
+  return createPortal(
     <>
       {/* ── Backdrop ──────────────────────────────────────────────────────── */}
-      {/* Mobile: semi-opaque full-screen cover  */}
-      {/* Desktop: invisible, just catches clicks outside the panel */}
-      <div
-        className="fixed inset-0 z-40 bg-foreground/25 sm:bg-transparent"
-        aria-hidden="true"
-        onClick={onClose}
-      />
+      {/* Invisible on every device — just catches clicks outside the panel */}
+      <div className="fixed inset-0 z-40" aria-hidden="true" onClick={onClose} />
 
       {/* ── Panel ─────────────────────────────────────────────────────────── */}
       <div
         role="dialog"
         aria-modal="true"
         aria-label={t("export")}
+        style={
+          pos
+            ? { left: pos.left, top: pos.top, width: 288, maxHeight: pos.maxH }
+            : { left: 8, top: 8, width: 288, maxHeight: 420 }
+        }
         className={[
-          // Mobile: fixed bottom sheet
-          "fixed bottom-0 left-0 right-0 z-50",
-          "flex max-h-[88dvh] flex-col",
-          "rounded-t-2xl border bg-popover",
+          "fixed z-50 flex flex-col",
+          "rounded-xl border bg-popover",
           "shadow-[var(--shadow-float)]",
-          // Desktop: caller's className provides absolute + position
-          // We use sm:absolute to override fixed via CSS specificity
-          "sm:bottom-auto sm:left-auto sm:right-auto",
-          "sm:rounded-xl sm:max-h-[min(520px,80dvh)]",
           className,
         ].join(" ")}
       >
-        {/* Drag handle — visible only on mobile */}
-        <div className="flex shrink-0 justify-center pt-2 sm:hidden" aria-hidden="true">
-          <div className="h-1 w-10 rounded-full bg-border" />
-        </div>
+        {/* Caret pointing at the trigger button */}
+        {pos && (
+          <span
+            aria-hidden="true"
+            className={[
+              "absolute size-2.5 rotate-45 border bg-popover",
+              pos.up ? "-bottom-[5px] border-b border-r" : "-top-[5px] border-l border-t",
+            ].join(" ")}
+            style={{ left: pos.arrowX - 5 }}
+          />
+        )}
 
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b px-4 py-3">
@@ -298,7 +332,8 @@ export function ExportMenu({
           onClose();
         }}
       />
-    </>
+    </>,
+    document.body,
   );
 }
 
