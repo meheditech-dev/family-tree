@@ -527,7 +527,7 @@ function buildTreeSVG(horizontal: boolean): SVGSVGElement {
   const lang = settings.language;
   const i = (bn: string, en: string) => (lang === "bn" ? bn : en);
   const DICT: Record<string, string> = {
-    patriarch: "প্রধান মাঝি|Patriarch",
+    patriarch: "প্রধান|Patriarch",
     spouse: "জীবনসঙ্গী|Spouse",
     self: "নিজে|Self",
     father: "বাবা|Father",

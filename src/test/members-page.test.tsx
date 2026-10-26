@@ -94,15 +94,11 @@ describe("members page", () => {
     // m7 is the eldest of the eight children of m3/m4.
     expect(container.querySelector('[data-birth-order="m7"]')).toHaveTextContent("Eldest daughter");
     // m19 is the youngest of the same group.
-    expect(container.querySelector('[data-birth-order="m19"]')).toHaveTextContent(
-      "Youngest daughter",
-    );
+    expect(container.querySelector('[data-birth-order="m19"]')).toHaveTextContent("Yng daughter");
     // m3 is the eldest of the three children of the root couple.
     expect(container.querySelector('[data-birth-order="m3"]')).toHaveTextContent("Eldest son");
     // m13 is the youngest of that group.
-    expect(container.querySelector('[data-birth-order="m13"]')).toHaveTextContent(
-      "Youngest daughter",
-    );
+    expect(container.querySelector('[data-birth-order="m13"]')).toHaveTextContent("Yng daughter");
     // The root couple has no siblings, so no order badge is shown.
     expect(container.querySelector('[data-birth-order="m1"]')).toBeNull();
   });

@@ -16,7 +16,7 @@ export function makeSeed(): Member[] {
       gender: "male",
       birthYear: 1945,
       deathYear: 2015,
-      role: "প্রধান মাঝি",
+      role: "প্রধান",
       spouseId: "m2",
     },
     {
@@ -63,7 +63,6 @@ export function makeSeed(): Member[] {
     { id: "m7", name: "আয়েশা সিদ্দিকা", gender: "female", birthYear: 1995, parentId: "m3" },
     { id: "m17", name: "মাহিয়া খান", gender: "female", birthYear: 2004, parentId: "m3" },
     { id: "m18", name: "তানভীর আহমেদ", gender: "male", birthYear: 2006, parentId: "m3" },
-    { id: "m19", name: "লামিয়া বেগম", gender: "female", birthYear: 2008, parentId: "m3" },
 
     // Gen 3 – children under m5/m6
     { id: "m10", name: "সাবাব করিম", gender: "male", birthYear: 1998, parentId: "m5" },
@@ -75,7 +74,7 @@ export function makeSeed(): Member[] {
     { id: "m21", name: "নাফিস হাসান", gender: "male", birthYear: 2004, parentId: "m13" },
 
     // Gen 4 – grandchildren under m8
-    { id: "m22", name: "আলিফ রহমান", gender: "male", birthYear: 2020, parentId: "m8" },
-    { id: "m23", name: "মীম রহমান", gender: "female", birthYear: 2022, parentId: "m8" },
+    { id: "m22", name: "আলিফ রহমান", gender: "male", birthYear: 2020, parentId: "m7" },
+    { id: "m23", name: "মীম রহমান", gender: "female", birthYear: 2022, parentId: "m7" },
   ];
 }
