@@ -223,7 +223,14 @@ export function MemberModal() {
                 </L>
                 {rel !== "root" && (
                   <L label={t("relatedTo")}>
-                    <select className={input} value={to} onChange={(e) => { setTo(e.target.value); setTo2(""); }}>
+                    <select
+                      className={input}
+                      value={to}
+                      onChange={(e) => {
+                        setTo(e.target.value);
+                        setTo2("");
+                      }}
+                    >
                       {members.map((m) => (
                         <option key={m.id} value={m.id}>
                           {m.name}
@@ -343,9 +350,7 @@ export function MemberModal() {
                   <select
                     className={input}
                     value={f.parentLink ?? "biological"}
-                    onChange={(e) =>
-                      set({ parentLink: e.target.value as Member["parentLink"] })
-                    }
+                    onChange={(e) => set({ parentLink: e.target.value as Member["parentLink"] })}
                   >
                     <option value="biological">{t("biological")}</option>
                     <option value="adoptive">{t("adoptive")}</option>

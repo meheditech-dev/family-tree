@@ -154,7 +154,12 @@ export function HomePage() {
               <SectionTitle title={t("homeGlance")} />
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 <Tile icon={Users} value={members.length} label={t("members")} tone="primary" />
-                <Tile icon={Layers} value={stats.genRows.length} label={t("generation")} tone="accent" />
+                <Tile
+                  icon={Layers}
+                  value={stats.genRows.length}
+                  label={t("generation")}
+                  tone="accent"
+                />
                 <Tile icon={Sprout} value={stats.living} label={t("living")} tone="secondary" />
                 <Tile icon={Heart} value={stats.couples} label={t("couples")} tone="muted" />
               </div>

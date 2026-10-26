@@ -46,11 +46,11 @@ export const MemberCard = memo(function MemberCard({
   };
 
   const menuItems = [
-    ["edit",      () => setUI({ modal: { mode: "edit", id: m.id } })],
+    ["edit", () => setUI({ modal: { mode: "edit", id: m.id } })],
     ["addSpouse", () => setUI({ modal: { mode: "add", relation: "spouse", relatedTo: m.id } })],
-    ["addChild",  () => setUI({ modal: { mode: "add", relation: "child",  relatedTo: m.id } })],
-    ["details",   () => setUI({ detailsId: m.id })],
-    ["delete",    () => confirm(t("confirmDelete")) && deleteMember(m.id)],
+    ["addChild", () => setUI({ modal: { mode: "add", relation: "child", relatedTo: m.id } })],
+    ["details", () => setUI({ detailsId: m.id })],
+    ["delete", () => confirm(t("confirmDelete")) && deleteMember(m.id)],
   ] as [string, () => void][];
 
   return (
@@ -76,7 +76,7 @@ export const MemberCard = memo(function MemberCard({
         "focus-visible:ring-2 focus-visible:ring-ring",
         dead ? "border-deceased/60 grayscale" : "border-primary",
         selected ? "ring-4 ring-primary/30" : "",
-        match   ? "ring-4 ring-warning"      : "",
+        match ? "ring-4 ring-warning" : "",
       ].join(" ")}
     >
       {/* Three-dot menu — top-left corner */}

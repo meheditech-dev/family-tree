@@ -40,9 +40,7 @@ export function buildFamilyGroups(members: Member[]): FamilyGroup[] {
   // heads the family line, regardless of who was added first.
   const ordered = members
     .map((m, i) => [m, i] as const)
-    .sort(([a, ai], [b, bi]) =>
-      a.gender === b.gender ? ai - bi : a.gender === "male" ? -1 : 1,
-    )
+    .sort(([a, ai], [b, bi]) => (a.gender === b.gender ? ai - bi : a.gender === "male" ? -1 : 1))
     .map(([m]) => m);
 
   for (const root of ordered) {

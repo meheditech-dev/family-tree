@@ -22,15 +22,15 @@ export function TreeCanvas({
   containerRef: React.RefObject<HTMLDivElement | null>;
   treeLayout?: TreeLayout;
 }) {
-  const allMembers  = useStore((s) => s.members);
+  const allMembers = useStore((s) => s.members);
   const settings = useStore((s) => s.settings);
-  const ui       = useStore((s) => s.ui);
+  const ui = useStore((s) => s.ui);
   const [pan, setPan] = useState({ x: 60, y: 60 });
   const panRef = useRef(pan);
   panRef.current = pan;
 
   const horizontal = treeLayout === "horizontal";
-  const cardMode   = horizontal ? "horizontal" : "vertical";
+  const cardMode = horizontal ? "horizontal" : "vertical";
 
   // When the user drills in from a FamilyPage card, show ONLY that family line.
   const members = useMemo(() => {
@@ -61,7 +61,7 @@ export function TreeCanvas({
   const analysis = useMemo(() => analyze(members), [members]);
   // A person with several marriages renders one node per unit; keep the first
   // instance for centering/selection lookups by member id.
-  const posById  = useMemo(() => {
+  const posById = useMemo(() => {
     const map = new Map<string, (typeof layout.nodes)[number]>();
     for (const n of layout.nodes) if (!map.has(n.id)) map.set(n.id, n);
     return map;
@@ -86,7 +86,7 @@ export function TreeCanvas({
     framed.current = treeLayout;
     const z = clamp(
       Math.min(
-        (el.clientWidth  - 48) / layout.width,
+        (el.clientWidth - 48) / layout.width,
         (el.clientHeight - 60) / layout.height,
         getState().settings.zoom,
       ),
@@ -105,12 +105,12 @@ export function TreeCanvas({
   // layout direction flips, since the node's position changes).
   useEffect(() => {
     if (!ui.center?.id) return;
-    const n  = posById.get(ui.center.id);
+    const n = posById.get(ui.center.id);
     const el = containerRef.current;
     if (!n || !el) return;
     const z = getState().settings.zoom;
     setPan({
-      x: el.clientWidth  / 2 - (n.x + cardW / 2) * z,
+      x: el.clientWidth / 2 - (n.x + cardW / 2) * z,
       y: el.clientHeight / 2 - (n.y + cardH / 2) * z,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -123,10 +123,12 @@ export function TreeCanvas({
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 100 : 1);
-      const z    = getState().settings.zoom;
+      const z = getState().settings.zoom;
       const next = clamp(z * Math.exp(-dy * 0.0015), ZMIN, ZMAX);
-      const r    = el.getBoundingClientRect();
-      const px = e.clientX - r.left, py = e.clientY - r.top, k = next / z;
+      const r = el.getBoundingClientRect();
+      const px = e.clientX - r.left,
+        py = e.clientY - r.top,
+        k = next / z;
       const p = panRef.current;
       setPan({ x: px - (px - p.x) * k, y: py - (py - p.y) * k });
       setSettings({ zoom: next });
@@ -137,7 +139,7 @@ export function TreeCanvas({
 
   // Drag-pan + two-finger pinch-zoom
   const pointers = useRef(new Map<number, { x: number; y: number }>());
-  const pinch    = useRef<{ d: number; z: number } | null>(null);
+  const pinch = useRef<{ d: number; z: number } | null>(null);
 
   const onDown = (e: React.PointerEvent) => {
     if ((e.target as HTMLElement).closest("[data-card]")) return;
@@ -162,8 +164,8 @@ export function TreeCanvas({
       ];
       const el = containerRef.current;
       if (!el) return;
-      const r    = el.getBoundingClientRect();
-      const z    = getState().settings.zoom;
+      const r = el.getBoundingClientRect();
+      const z = getState().settings.zoom;
       const next = clamp(
         pinch.current.z * (Math.hypot(a.x - b.x, a.y - b.y) / pinch.current.d),
         ZMIN,
@@ -171,7 +173,7 @@ export function TreeCanvas({
       );
       const px = (a.x + b.x) / 2 - r.left,
         py = (a.y + b.y) / 2 - r.top,
-        k  = next / z;
+        k = next / z;
       setPan((p) => ({ x: px - (px - p.x) * k, y: py - (py - p.y) * k }));
       setSettings({ zoom: next });
     } else if (pointers.current.size === 1) {
@@ -183,7 +185,7 @@ export function TreeCanvas({
     if (pointers.current.size < 2) pinch.current = null;
   };
 
-  const q     = ui.search.trim().toLowerCase();
+  const q = ui.search.trim().toLowerCase();
   const dimOf = (id: string) =>
     ui.genFilter > 0 && Math.min(posById.get(id)?.gen ?? 1, 4) !== ui.genFilter;
 
@@ -208,7 +210,7 @@ export function TreeCanvas({
         className="absolute left-0 top-0 origin-top-left"
         style={{
           transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-          width:  layout.width  + 40,
+          width: layout.width + 40,
           height: layout.height + 40,
         }}
       >
@@ -259,22 +261,24 @@ export function TreeCanvas({
           const m = byId.get(n.id);
           if (!m) return null;
           const sharedProps = {
-            nodeKey:  n.key,
+            nodeKey: n.key,
             m,
-            x:        n.x,
-            y:        n.y,
-            w:        cardW,
-            h:        cardH,
-            gen:      n.gen,
-            photo:    settings.photoSize,
-            rel:      relationKey(m, analysis, ui.selectedId),
-            dim:      dimOf(n.id),
+            x: n.x,
+            y: n.y,
+            w: cardW,
+            h: cardH,
+            gen: n.gen,
+            photo: settings.photoSize,
+            rel: relationKey(m, analysis, ui.selectedId),
+            dim: dimOf(n.id),
             selected: ui.selectedId === n.id,
-            match:    !!q && m.name.toLowerCase().includes(q),
+            match: !!q && m.name.toLowerCase().includes(q),
           };
-          return horizontal
-            ? <MemberCardRow key={n.key} {...sharedProps} />
-            : <MemberCard    key={n.key} {...sharedProps} />;
+          return horizontal ? (
+            <MemberCardRow key={n.key} {...sharedProps} />
+          ) : (
+            <MemberCard key={n.key} {...sharedProps} />
+          );
         })}
       </div>
     </div>

@@ -1,4 +1,5 @@
 import type { Analysis } from "./layout";
+import { sortByBirthOrder } from "./birth-order";
 import type { Member } from "./types";
 
 export interface MemberGroup {
@@ -54,6 +55,10 @@ export function buildMemberBoard(members: Member[], analysis: Analysis): MemberC
         column.groups.push(group);
       }
       group.members.push(member);
+    }
+    // Siblings are listed eldest first.
+    for (const group of column.groups) {
+      if (group.kind === "siblings") group.members = sortByBirthOrder(group.members);
     }
   }
   return [...columns.values()].sort((a, b) => a.generation - b.generation);

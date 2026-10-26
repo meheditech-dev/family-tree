@@ -105,7 +105,12 @@ export function analyze(members: Member[]): Analysis {
       const other = anchor === m.id ? sp : m.id;
       marriages.push({ id: key, partners: [anchor, other] });
       const owner = primaryOf(anchor);
-      const unit: Unit = { id: `${owner}#${unitList.length}`, owner, members: [anchor, other], childIds: [] };
+      const unit: Unit = {
+        id: `${owner}#${unitList.length}`,
+        owner,
+        members: [anchor, other],
+        childIds: [],
+      };
       unitsOf.set(owner, [...(unitsOf.get(owner) ?? []), unit]);
       unitList.push(unit);
     }
@@ -245,8 +250,7 @@ export function layoutTree(members: Member[], o: LayoutOpts): Layout {
   const spouseSlot = (u: Unit) =>
     Math.max(
       o.cardW,
-      u.childIds.reduce((s, c) => s + measure(c), 0) +
-        Math.max(0, u.childIds.length - 1) * o.gapX,
+      u.childIds.reduce((s, c) => s + measure(c), 0) + Math.max(0, u.childIds.length - 1) * o.gapX,
     );
   const hubRowW = (units: Unit[]) =>
     units.reduce((s, u) => s + spouseSlot(u), 0) + (units.length - 1) * unitGap;
@@ -261,7 +265,8 @@ export function layoutTree(members: Member[], o: LayoutOpts): Layout {
             const w = Math.max(coupleW(u), childSpan(u));
             unitWidths.set(u.id, w);
             return s + w;
-          }, 0) + (units.length - 1) * unitGap
+          }, 0) +
+          (units.length - 1) * unitGap
       : o.cardW;
     widths.set(id, width);
     return width;
@@ -280,7 +285,8 @@ export function layoutTree(members: Member[], o: LayoutOpts): Layout {
     };
     const placeKids = (u: Unit, cx: number, cw: number) => {
       const kids = u.childIds;
-      const cs = kids.reduce((s, c) => s + (widths.get(c) ?? 0), 0) + Math.max(0, kids.length - 1) * o.gapX;
+      const cs =
+        kids.reduce((s, c) => s + (widths.get(c) ?? 0), 0) + Math.max(0, kids.length - 1) * o.gapX;
       let childLeft = cx + (cw - cs) / 2;
       for (const c of kids) {
         place(c, childLeft);
@@ -380,8 +386,7 @@ export function layoutTree(members: Member[], o: LayoutOpts): Layout {
 export function layoutTreeHorizontal(members: Member[], o: LayoutOpts): Layout {
   const a = analyze(members);
   // Horizontal distance between generations; vertical density between siblings.
-  const colW = o.cardW +
-    Math.max(o.gapX, 72, o.cardW + o.spouseGap + 16);
+  const colW = o.cardW + Math.max(o.gapX, 72, o.cardW + o.spouseGap + 16);
   const unitGap = o.gapY;
   const pos = new Map<string, NodePos>();
   const firstPos = new Map<string, NodePos>();
@@ -398,8 +403,7 @@ export function layoutTreeHorizontal(members: Member[], o: LayoutOpts): Layout {
   const spouseSlot = (u: Unit) =>
     Math.max(
       o.cardH,
-      u.childIds.reduce((s, c) => s + measure(c), 0) +
-        Math.max(0, u.childIds.length - 1) * o.gapY,
+      u.childIds.reduce((s, c) => s + measure(c), 0) + Math.max(0, u.childIds.length - 1) * o.gapY,
     );
   const hubColH = (units: Unit[]) =>
     units.reduce((s, u) => s + spouseSlot(u), 0) + (units.length - 1) * unitGap;
@@ -414,7 +418,8 @@ export function layoutTreeHorizontal(members: Member[], o: LayoutOpts): Layout {
             const h = Math.max(coupleH(u), childSpan(u));
             unitHeights.set(u.id, h);
             return s + h;
-          }, 0) + (units.length - 1) * unitGap
+          }, 0) +
+          (units.length - 1) * unitGap
       : o.cardH;
     heights.set(id, height);
     return height;
@@ -433,7 +438,8 @@ export function layoutTreeHorizontal(members: Member[], o: LayoutOpts): Layout {
     };
     const placeKids = (u: Unit, cy: number, ch: number) => {
       const kids = u.childIds;
-      const cs = kids.reduce((s, c) => s + (heights.get(c) ?? 0), 0) + Math.max(0, kids.length - 1) * o.gapY;
+      const cs =
+        kids.reduce((s, c) => s + (heights.get(c) ?? 0), 0) + Math.max(0, kids.length - 1) * o.gapY;
       let childTop = cy + (ch - cs) / 2;
       for (const c of kids) {
         place(c, childTop);

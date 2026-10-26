@@ -169,8 +169,7 @@ export function saveMember(m: Member, relation?: "root" | "child" | "spouse", re
     }
     // A brand-new separate root starts its own family line — don't keep the
     // old family filter, otherwise the new person would be invisible.
-    const focusedRootId =
-      !exists && relation === "root" ? undefined : s.ui.focusedRootId;
+    const focusedRootId = !exists && relation === "root" ? undefined : s.ui.focusedRootId;
     return { members: normalizeRelations(members), ui: { ...s.ui, focusedRootId } };
   });
 }

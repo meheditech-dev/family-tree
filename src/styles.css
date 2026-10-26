@@ -170,11 +170,16 @@
     font-family: var(--font-sans);
     line-height: 1.6;
   }
-  * { transition-property: background-color, border-color, color, opacity; transition-duration: 200ms; }
+  * {
+    transition-property: background-color, border-color, color, opacity;
+    transition-duration: 200ms;
+  }
 }
 
 @media print {
-  .no-print { display: none !important; }
+  .no-print {
+    display: none !important;
+  }
 }
 
 .tree-export-surface {
@@ -189,7 +194,10 @@
   color: var(--foreground);
 }
 
-.tree-export-surface *, .tree-export-surface { transition: none !important; }
+.tree-export-surface *,
+.tree-export-surface {
+  transition: none !important;
+}
 
 @layer base {
 }

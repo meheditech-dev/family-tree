@@ -61,10 +61,6 @@ export function makeSeed(): Member[] {
 
     // Gen 3 – 8 children under m3/m4 (the stress-test generation)
     { id: "m7", name: "আয়েশা সিদ্দিকা", gender: "female", birthYear: 1995, parentId: "m3" },
-    { id: "m8", name: "তাসিন রহমান", gender: "male", birthYear: 1997, parentId: "m3" },
-    { id: "m9", name: "নাবিলা আক্তার", gender: "female", birthYear: 1999, parentId: "m3" },
-    { id: "m15", name: "সাদিয়া ইসলাম", gender: "female", birthYear: 2000, parentId: "m3" },
-    { id: "m16", name: "রাফি করিম", gender: "male", birthYear: 2002, parentId: "m3" },
     { id: "m17", name: "মাহিয়া খান", gender: "female", birthYear: 2004, parentId: "m3" },
     { id: "m18", name: "তানভীর আহমেদ", gender: "male", birthYear: 2006, parentId: "m3" },
     { id: "m19", name: "লামিয়া বেগম", gender: "female", birthYear: 2008, parentId: "m3" },

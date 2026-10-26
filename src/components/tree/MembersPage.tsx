@@ -2,14 +2,16 @@ import { useMemo, useRef, useState } from "react";
 import { ArrowRight, ArrowUpDown, ChevronDown, Plus, Sprout, UsersRound } from "lucide-react";
 import { analyze, type Analysis } from "@/lib/tree/layout";
 import { buildMemberBoard, type MemberColumn } from "@/lib/tree/member-board";
+import { birthOrderLabel, buildSiblingOrders, type SiblingOrders } from "@/lib/tree/birth-order";
 import { computeAge, genVar, relationKey } from "@/lib/tree/helpers";
+import { ordinalLabel } from "@/lib/tree/ordinal";
 import { useT, type TKey } from "@/lib/tree/i18n";
 import { setUI, startNewFamily, useStore } from "@/lib/tree/store";
 import type { Member } from "@/lib/tree/types";
 import { ExportMenu } from "./ExportMenu";
 
 type View = "list" | "board" | "grid";
-type SortKey = "name" | "birthYear" | "gen";
+type SortKey = "name" | "birthYear" | "gen" | "birthOrder";
 const VIEWS: { value: View; label: TKey }[] = [
   { value: "list", label: "listView" },
   { value: "board", label: "boardView" },
@@ -49,10 +51,12 @@ function MemberEntry({
   member,
   analysis,
   compact = false,
+  siblingOrders,
 }: {
   member: Member;
   analysis: Analysis;
   compact?: boolean;
+  siblingOrders?: SiblingOrders;
 }) {
   const t = useT();
   const language = useStore((s) => s.settings.language);
@@ -67,6 +71,13 @@ function MemberEntry({
         : relation === "patriarch" || member.role
           ? "bg-warning/20 text-amber-700 dark:text-amber-300"
           : "bg-male/10 text-male";
+  // Birth order within the sibling group, e.g. "3rd daughter".
+  const order = siblingOrders?.byId.get(member.id);
+  const orderLabel = order ? birthOrderLabel(order, member) : null;
+  const orderText =
+    orderLabel && order
+      ? t(orderLabel.key).replace("{n}", ordinalLabel(orderLabel.n ?? order.rank, language))
+      : null;
   return (
     <button
       type="button"
@@ -101,6 +112,14 @@ function MemberEntry({
           {relation ? t(relation) : member.role}
         </span>
       )}
+      {orderText && (
+        <span
+          className="shrink-0 rounded-full bg-primary/12 px-2 py-0.5 text-center text-[11px] font-semibold leading-snug text-primary"
+          data-birth-order={member.id}
+        >
+          {orderText}
+        </span>
+      )}
       {member.deathYear && <span className="sr-only">{t("deceased")}</span>}
     </button>
   );
@@ -111,11 +130,13 @@ function GenerationBoard({
   analysis,
   generationLabel,
   num,
+  siblingOrders,
 }: {
   columns: MemberColumn[];
   analysis: Analysis;
   generationLabel: (generation: number) => string;
   num: (n: number) => string;
+  siblingOrders: SiblingOrders;
 }) {
   const t = useT();
   return (
@@ -187,6 +208,7 @@ function GenerationBoard({
                             member={member}
                             analysis={analysis}
                             compact={group.kind === "siblings"}
+                            siblingOrders={siblingOrders}
                           />
                         ))}
                       </div>
@@ -206,39 +228,45 @@ function MemberList({
   members,
   analysis,
   num,
+  siblingOrders,
 }: {
   members: Member[];
   analysis: Analysis;
   num: (n: number) => string;
+  siblingOrders: SiblingOrders;
 }) {
   const t = useT();
+  const language = useStore((s) => s.settings.language);
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: "gen", dir: 1 });
   const [scroll, setScroll] = useState(0);
-  const rows = useMemo(
-    () =>
-      [...members].sort((a, b) => {
-        const difference =
-          sort.key === "name"
-            ? a.name.localeCompare(b.name)
-            : sort.key === "gen"
-              ? (analysis.gen.get(a.id) ?? 1) - (analysis.gen.get(b.id) ?? 1)
+  const rows = useMemo(() => {
+    const orderRank = (member: Member) =>
+      siblingOrders.byId.get(member.id)?.rank ?? Number.MAX_SAFE_INTEGER;
+    return [...members].sort((a, b) => {
+      const difference =
+        sort.key === "name"
+          ? a.name.localeCompare(b.name)
+          : sort.key === "gen"
+            ? (analysis.gen.get(a.id) ?? 1) - (analysis.gen.get(b.id) ?? 1)
+            : sort.key === "birthOrder"
+              ? orderRank(a) - orderRank(b)
               : (a.birthYear ?? 0) - (b.birthYear ?? 0);
-        return difference * sort.dir;
-      }),
-    [members, analysis, sort],
-  );
+      return difference * sort.dir;
+    });
+  }, [members, analysis, sort, siblingOrders]);
   const rowHeight = 64;
   const start = Math.max(0, Math.floor(scroll / rowHeight) - 5);
   const headers: { key?: SortKey; label: TKey }[] = [
     { key: "name", label: "name" },
     { label: "relationType" },
     { key: "birthYear", label: "birthYear" },
+    { key: "birthOrder", label: "birthOrder" },
     { key: "gen", label: "generation" },
   ];
   return (
     <div className="overflow-x-auto rounded-2xl border bg-card">
-      <div className="min-w-[640px]">
-        <div className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 border-b bg-muted px-5 py-3 text-sm">
+      <div className="min-w-[720px]">
+        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-4 border-b bg-muted px-5 py-3 text-sm">
           {headers.map(({ key, label }) =>
             key ? (
               <button
@@ -269,13 +297,22 @@ function MemberList({
             {rows.slice(start, start + 40).map((member, index) => {
               const relation = relationKey(member, analysis);
               const generation = analysis.gen.get(member.id) ?? 1;
+              const order = siblingOrders.byId.get(member.id);
+              const orderLabel = order ? birthOrderLabel(order, member) : null;
+              const orderText =
+                orderLabel && order
+                  ? t(orderLabel.key).replace(
+                      "{n}",
+                      ordinalLabel(orderLabel.n ?? order.rank, language),
+                    )
+                  : "—";
               return (
                 <button
                   key={member.id}
                   type="button"
                   data-member-id={member.id}
                   onClick={() => setUI({ detailsId: member.id })}
-                  className="absolute inset-x-0 grid grid-cols-[2fr_1fr_1fr_1fr] items-center gap-4 border-b px-5 text-left text-sm hover:bg-accent/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+                  className="absolute inset-x-0 grid grid-cols-[2fr_1fr_1fr_1fr_1fr] items-center gap-4 border-b px-5 text-left text-sm hover:bg-accent/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
                   style={{ top: (start + index) * rowHeight, height: rowHeight }}
                 >
                   <span className="flex min-w-0 items-center gap-3">
@@ -289,6 +326,7 @@ function MemberList({
                     {member.birthYear ? num(member.birthYear) : "?"} –{" "}
                     {member.deathYear ? num(member.deathYear) : t("present")}
                   </span>
+                  <span className="truncate text-relation">{orderText}</span>
                   <span className="flex items-center gap-2">
                     <span
                       className="size-2 rounded-full"
@@ -312,6 +350,7 @@ export function MembersPage() {
   const language = useStore((s) => s.settings.language);
   const analysis = useMemo(() => analyze(members), [members]);
   const board = useMemo(() => buildMemberBoard(members, analysis), [members, analysis]);
+  const siblingOrders = useMemo(() => buildSiblingOrders(members), [members]);
   const [view, setView] = useState<View>("board");
   const [livingOnly, setLivingOnly] = useState(false);
   const [gender, setGender] = useState("all");
@@ -517,6 +556,7 @@ export function MembersPage() {
             analysis={analysis}
             generationLabel={generationLabel}
             num={num}
+            siblingOrders={siblingOrders}
           />
         ) : view === "grid" ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
@@ -525,7 +565,7 @@ export function MembersPage() {
                 <p className="px-3 pt-2 text-xs font-medium text-primary">
                   {generationLabel(analysis.gen.get(member.id) ?? 1)}
                 </p>
-                <MemberEntry member={member} analysis={analysis} />
+                <MemberEntry member={member} analysis={analysis} siblingOrders={siblingOrders} />
               </div>
             ))}
           </div>
@@ -535,14 +575,17 @@ export function MembersPage() {
             members={filtered}
             analysis={analysis}
             num={num}
+            siblingOrders={siblingOrders}
           />
         )}
 
         <footer className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-1 text-xs text-muted-foreground">
           <p aria-live="polite">
-            {t("shownMembers")
-              .replace("{count}", num(filtered.length))
-              .replace("{total}", num(members.length))}
+            <span>
+              {t("shownMembers")
+                .replace("{count}", num(filtered.length))
+                .replace("{total}", num(members.length))}
+            </span>
             {view !== "list" && (
               <>
                 {" "}

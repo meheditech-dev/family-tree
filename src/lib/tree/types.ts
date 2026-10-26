@@ -28,12 +28,10 @@ export interface Member {
 }
 
 /** All spouses of a member — `spouseIds` wins when present (empty = unlinked). */
-export const spousesOf = (m: Member): string[] =>
-  m.spouseIds ?? (m.spouseId ? [m.spouseId] : []);
+export const spousesOf = (m: Member): string[] => m.spouseIds ?? (m.spouseId ? [m.spouseId] : []);
 
 /** All parent ids of a member — `parentIds` wins when present (empty = unlinked). */
-export const parentsOf = (m: Member): string[] =>
-  m.parentIds ?? (m.parentId ? [m.parentId] : []);
+export const parentsOf = (m: Member): string[] => m.parentIds ?? (m.parentId ? [m.parentId] : []);
 
 export type Lang = "bn" | "en";
 export type LineStyle = "straight" | "curved";

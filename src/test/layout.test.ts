@@ -180,10 +180,16 @@ describe("layoutTree", () => {
 type Analysis = ReturnType<typeof analyze>;
 
 /** Horizontal bounds of a member's whole subtree: own + spouses' cards + descendants. */
-function subtreeSpanX(l: Layout, a: Analysis, id: string, seen = new Set<string>()): [number, number] {
+function subtreeSpanX(
+  l: Layout,
+  a: Analysis,
+  id: string,
+  seen = new Set<string>(),
+): [number, number] {
   if (seen.has(id)) return [Infinity, -Infinity];
   seen.add(id);
-  let lo = Infinity, hi = -Infinity;
+  let lo = Infinity,
+    hi = -Infinity;
   for (const n of l.nodes) {
     if (n.id !== id) continue;
     lo = Math.min(lo, n.x);
@@ -208,10 +214,16 @@ function subtreeSpanX(l: Layout, a: Analysis, id: string, seen = new Set<string>
 }
 
 /** Vertical bounds of a member's whole subtree (horizontal layout). */
-function subtreeSpanY(l: Layout, a: Analysis, id: string, seen = new Set<string>()): [number, number] {
+function subtreeSpanY(
+  l: Layout,
+  a: Analysis,
+  id: string,
+  seen = new Set<string>(),
+): [number, number] {
   if (seen.has(id)) return [Infinity, -Infinity];
   seen.add(id);
-  let lo = Infinity, hi = -Infinity;
+  let lo = Infinity,
+    hi = -Infinity;
   for (const n of l.nodes) {
     if (n.id !== id) continue;
     lo = Math.min(lo, n.y);
@@ -263,11 +275,16 @@ function childrenGroupCenterY(l: Layout, a: Analysis, unit: Unit): number {
 
 /** Liang–Barsky: does the segment touch/enter the rectangle? */
 function segHitsRect(
-  x1: number, y1: number, x2: number, y2: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
   r: { x: number; y: number; w: number; h: number },
 ): boolean {
-  const dx = x2 - x1, dy = y2 - y1;
-  let t0 = 0, t1 = 1;
+  const dx = x2 - x1,
+    dy = y2 - y1;
+  let t0 = 0,
+    t1 = 1;
   const p = [-dx, dx, -dy, dy];
   const q = [x1 - r.x, r.x + r.w - x1, y1 - r.y, r.y + r.h - y1];
   for (let i = 0; i < 4; i++) {
@@ -312,7 +329,8 @@ function expectNoCardOverlaps(l: Layout, cardW: number, cardH: number) {
   const ns = l.nodes;
   for (let i = 0; i < ns.length; i++) {
     for (let j = i + 1; j < ns.length; j++) {
-      const a = ns[i]!, b = ns[j]!;
+      const a = ns[i]!,
+        b = ns[j]!;
       const apart =
         a.x + cardW <= b.x || b.x + cardW <= a.x || a.y + cardH <= b.y || b.y + cardH <= a.y;
       expect(apart, `cards ${a.key} and ${b.key} overlap`).toBe(true);
@@ -324,7 +342,14 @@ function expectNoCardOverlaps(l: Layout, cardW: number, cardH: number) {
 const stress: Member[] = [
   { id: "r1", name: "R1", gender: "male", birthYear: 1920, spouseIds: ["r2"] },
   { id: "r2", name: "R2", gender: "female", birthYear: 1925, spouseIds: ["r1"] },
-  { id: "k1", name: "K1", gender: "male", birthYear: 1945, parentIds: ["r1"], spouseIds: ["w1", "w2"] },
+  {
+    id: "k1",
+    name: "K1",
+    gender: "male",
+    birthYear: 1945,
+    parentIds: ["r1"],
+    spouseIds: ["w1", "w2"],
+  },
   { id: "w1", name: "W1", gender: "female", birthYear: 1948, spouseIds: ["k1"] },
   { id: "w2", name: "W2", gender: "female", birthYear: 1950, spouseIds: ["k1"] },
   { id: "g1", name: "G1", gender: "male", birthYear: 1970, parentIds: ["k1", "w1"] },
@@ -441,7 +466,8 @@ describe("root centering & branch balancing", () => {
     const l = layoutTree(makeSeed(), o);
     const r = a.roots[0]!;
     const own = l.nodes.filter((n) => n.id === r);
-    const rootCenter = (Math.min(...own.map((n) => n.x)) + Math.max(...own.map((n) => n.x + o.cardW))) / 2;
+    const rootCenter =
+      (Math.min(...own.map((n) => n.x)) + Math.max(...own.map((n) => n.x + o.cardW))) / 2;
     const kidCenters = (a.childrenByParent.get(r) ?? []).map((c) => {
       const [lo, hi] = subtreeSpanX(l, a, c);
       return (lo + hi) / 2;

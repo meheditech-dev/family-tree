@@ -51,16 +51,16 @@ export function ExportMenu({
   /** Trigger button — the dropdown anchors itself to this element. */
   anchorRef?: React.RefObject<HTMLButtonElement | null>;
 }) {
-  const t       = useT();
-  const nav     = useNavigate();
+  const t = useT();
+  const nav = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const [busy,        setBusy]        = useState(false);
-  const [ready,       setReady]       = useState<PreparedExport | null>(null);
-  const [failed,      setFailed]      = useState(false);
-  const [errorMsg,    setErrorMsg]    = useState("");
+  const [busy, setBusy] = useState(false);
+  const [ready, setReady] = useState<PreparedExport | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
   const [showPdfOpts, setShowPdfOpts] = useState(false);
-  const [pos,         setPos]         = useState<{
+  const [pos, setPos] = useState<{
     top: number;
     left: number;
     maxH: number;
@@ -100,7 +100,9 @@ export function ExportMenu({
 
   // Close on Escape
   useEffect(() => {
-    const fn = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const fn = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     window.addEventListener("keydown", fn);
     return () => window.removeEventListener("keydown", fn);
   }, [onClose]);
@@ -137,7 +139,10 @@ export function ExportMenu({
     onClose();
   };
 
-  const runClose = (fn: () => void) => () => { fn(); onClose(); };
+  const runClose = (fn: () => void) => () => {
+    fn();
+    onClose();
+  };
 
   const btnCls =
     "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm " +
@@ -195,7 +200,6 @@ export function ExportMenu({
 
         {/* ── Scrollable body ──────────────────────────────────────────────── */}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 pb-4 pt-2">
-
           {/* Section: Export */}
           <SectionLabel>Export</SectionLabel>
 
@@ -240,7 +244,11 @@ export function ExportMenu({
                 <RectangleVertical className="size-4 shrink-0 text-muted-foreground" />
                 <span className="flex-1">{t("pdfVertical")}</span>
               </button>
-              <button className={btnCls} disabled={busy} onClick={() => prepare("pdf", "horizontal")}>
+              <button
+                className={btnCls}
+                disabled={busy}
+                onClick={() => prepare("pdf", "horizontal")}
+              >
                 <RectangleHorizontal className="size-4 shrink-0 text-muted-foreground" />
                 <span className="flex-1">{t("pdfHorizontal")}</span>
               </button>
@@ -287,11 +295,7 @@ export function ExportMenu({
           <div className="my-2 border-t" />
           <SectionLabel>Data</SectionLabel>
 
-          <button
-            className={btnCls}
-            disabled={busy}
-            onClick={() => fileRef.current?.click()}
-          >
+          <button className={btnCls} disabled={busy} onClick={() => fileRef.current?.click()}>
             <Upload className="size-4 shrink-0 text-muted-foreground" />
             <span className="flex-1">{t("importJson")}</span>
           </button>
@@ -320,10 +324,7 @@ export function ExportMenu({
           </button>
 
           {/* iOS home-bar safe area */}
-          <div
-            className="h-2"
-            style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
-          />
+          <div className="h-2" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }} />
         </div>
       </div>
 
@@ -336,7 +337,7 @@ export function ExportMenu({
         onChange={async (e) => {
           const f = e.target.files?.[0];
           if (!f) return;
-          e.target.value = "";          // allow re-importing the same file
+          e.target.value = ""; // allow re-importing the same file
           try {
             const data = JSON.parse(await f.text());
             if (!importMembers(data)) alert(t("invalidFile"));

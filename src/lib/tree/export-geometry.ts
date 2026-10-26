@@ -13,8 +13,8 @@ export const EXPORT_PADDING = 48;
 
 /** Base dimensions before the user's nodeSize scale is applied. */
 const BASE = {
-  vertical:   { w: 150, h: 148 },
-  horizontal: { w: 320, h: 76  },
+  vertical: { w: 150, h: 148 },
+  horizontal: { w: 320, h: 76 },
 } as const;
 
 export type CardMode = "vertical" | "horizontal";

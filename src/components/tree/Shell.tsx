@@ -1,8 +1,24 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
-  Leaf, Home, Network, Users, HeartHandshake, UsersRound, Settings, Download, DatabaseBackup,
-  LifeBuoy, ShieldCheck, LogOut, Search, Sun, Moon, Menu, X, AlertTriangle,
+  Leaf,
+  Home,
+  Network,
+  Users,
+  HeartHandshake,
+  UsersRound,
+  Settings,
+  Download,
+  DatabaseBackup,
+  LifeBuoy,
+  ShieldCheck,
+  LogOut,
+  Search,
+  Sun,
+  Moon,
+  Menu,
+  X,
+  AlertTriangle,
 } from "lucide-react";
 import { ACCENTS } from "@/lib/tree/types";
 import { getState, hydrate, setSettings, setUI, useStore } from "@/lib/tree/store";
@@ -22,7 +38,10 @@ export function Shell({ children }: { children: ReactNode }) {
     const r = document.documentElement;
     r.classList.toggle("dark", settings.theme === "dark");
     const accent = ACCENTS[settings.accentColor] ?? ACCENTS["teal"];
-    if (accent) { r.style.setProperty("--primary", accent); r.style.setProperty("--ring", accent); }
+    if (accent) {
+      r.style.setProperty("--primary", accent);
+      r.style.setProperty("--ring", accent);
+    }
     r.lang = settings.language;
   }, [settings.theme, settings.accentColor, settings.language]);
 
@@ -34,7 +53,11 @@ export function Shell({ children }: { children: ReactNode }) {
         {warning && (
           <div className="no-print flex items-center gap-2 border-b bg-warning/15 px-4 py-2 text-sm">
             <AlertTriangle className="size-4 text-warning" /> {t("quota")}
-            <button className="ml-auto" aria-label="close" onClick={() => setUI({ warning: undefined })}>
+            <button
+              className="ml-auto"
+              aria-label="close"
+              onClick={() => setUI({ warning: undefined })}
+            >
               <X className="size-4" />
             </button>
           </div>
@@ -54,8 +77,10 @@ function Sidebar() {
   const [exp, setExp] = useState(false);
   const exportBtnRef = useRef<HTMLButtonElement>(null);
   const close = () => setUI({ sidebarOpen: false });
-  const item = "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground border-l-[3px] border-transparent";
-  const active = "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold bg-accent text-accent-foreground border-l-[3px] border-primary";
+  const item =
+    "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground border-l-[3px] border-transparent";
+  const active =
+    "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold bg-accent text-accent-foreground border-l-[3px] border-primary";
   const nav: {
     to: "/" | "/family" | "/tree" | "/members" | "/relationships";
     label: string;
@@ -65,7 +90,12 @@ function Sidebar() {
     { to: "/", label: t("home"), icon: Home, match: path === "/" },
     { to: "/tree", label: t("tree"), icon: Network, match: path === "/tree" },
     { to: "/members", label: t("members"), icon: Users, match: path === "/members" },
-    { to: "/relationships", label: t("relations"), icon: HeartHandshake, match: path === "/relationships" },
+    {
+      to: "/relationships",
+      label: t("relations"),
+      icon: HeartHandshake,
+      match: path === "/relationships",
+    },
     { to: "/family", label: t("family"), icon: UsersRound, match: path === "/family" },
   ];
   return (
@@ -101,7 +131,10 @@ function Sidebar() {
             <div className="my-3 border-t" />
             <button
               className={item}
-              onClick={() => { setUI({ panelOpen: true }); close(); }}
+              onClick={() => {
+                setUI({ panelOpen: true });
+                close();
+              }}
             >
               <Settings className="size-4" /> {t("settings")}
             </button>
@@ -116,12 +149,7 @@ function Sidebar() {
               >
                 <Download className="size-4" /> {t("export")}
               </button>
-              {exp && (
-                <ExportMenu
-                  onClose={() => setExp(false)}
-                  anchorRef={exportBtnRef}
-                />
-              )}
+              {exp && <ExportMenu onClose={() => setExp(false)} anchorRef={exportBtnRef} />}
             </div>
 
             <button className={item} onClick={exportJson}>
@@ -132,9 +160,15 @@ function Sidebar() {
           {/* Bottom links pushed to the end */}
           <div className="mt-auto flex flex-col gap-1 pt-4">
             <div className="border-t mb-2" />
-            <button className={item}><LifeBuoy className="size-4" /> {t("help")}</button>
-            <button className={item}><ShieldCheck className="size-4" /> {t("privacy")}</button>
-            <button className={item}><LogOut className="size-4" /> {t("logout")}</button>
+            <button className={item}>
+              <LifeBuoy className="size-4" /> {t("help")}
+            </button>
+            <button className={item}>
+              <ShieldCheck className="size-4" /> {t("privacy")}
+            </button>
+            <button className={item}>
+              <LogOut className="size-4" /> {t("logout")}
+            </button>
           </div>
         </div>
       </aside>
@@ -167,7 +201,9 @@ function Topbar() {
 
   return (
     <header className="no-print flex h-16 items-center gap-2 border-b bg-card px-3 md:gap-4 md:px-6">
-      <button className="md:hidden" aria-label="menu" onClick={() => setUI({ sidebarOpen: true })}><Menu className="size-5" /></button>
+      <button className="md:hidden" aria-label="menu" onClick={() => setUI({ sidebarOpen: true })}>
+        <Menu className="size-5" />
+      </button>
       <label className="hidden items-center gap-1 rounded-lg border px-2 py-1.5 text-sm lg:flex">
         <select
           className="bg-transparent outline-none"
@@ -189,12 +225,21 @@ function Topbar() {
         />
       </div>
       <div className="flex items-center gap-1 md:gap-3">
-        <button className="hidden text-sm text-muted-foreground hover:text-foreground xl:block" onClick={() => setUI({ panelOpen: true })}>{t("settings")}</button>
-        <button className="hidden text-sm text-muted-foreground hover:text-foreground xl:block">{t("support")}</button>
+        <button
+          className="hidden text-sm text-muted-foreground hover:text-foreground xl:block"
+          onClick={() => setUI({ panelOpen: true })}
+        >
+          {t("settings")}
+        </button>
+        <button className="hidden text-sm text-muted-foreground hover:text-foreground xl:block">
+          {t("support")}
+        </button>
         <button
           aria-label="theme"
           className="grid size-9 place-items-center rounded-full hover:bg-muted"
-          onClick={() => setSettings({ theme: getState().settings.theme === "dark" ? "light" : "dark" })}
+          onClick={() =>
+            setSettings({ theme: getState().settings.theme === "dark" ? "light" : "dark" })
+          }
         >
           {s.theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
         </button>

@@ -66,24 +66,18 @@ export const MemberCardRow = memo(function MemberCardRow({
   };
 
   const menuItems = [
-    ["edit",      () => setUI({ modal: { mode: "edit", id: m.id } })],
+    ["edit", () => setUI({ modal: { mode: "edit", id: m.id } })],
     ["addSpouse", () => setUI({ modal: { mode: "add", relation: "spouse", relatedTo: m.id } })],
-    ["addChild",  () => setUI({ modal: { mode: "add", relation: "child",  relatedTo: m.id } })],
-    ["details",   () => setUI({ detailsId: m.id })],
-    ["delete",    () => confirm(t("confirmDelete")) && deleteMember(m.id)],
+    ["addChild", () => setUI({ modal: { mode: "add", relation: "child", relatedTo: m.id } })],
+    ["details", () => setUI({ detailsId: m.id })],
+    ["delete", () => confirm(t("confirmDelete")) && deleteMember(m.id)],
   ] as [string, () => void][];
 
   // Gender/status strip colour
-  const stripCls = dead
-    ? "bg-deceased/60"
-    : m.gender === "male"
-    ? "bg-male"
-    : "bg-female";
+  const stripCls = dead ? "bg-deceased/60" : m.gender === "male" ? "bg-male" : "bg-female";
 
   // Avatar status ring: living = primary, deceased = muted
-  const avatarRingCls = dead
-    ? "ring-2 ring-deceased/50"
-    : "ring-2 ring-primary/50";
+  const avatarRingCls = dead ? "ring-2 ring-deceased/50" : "ring-2 ring-primary/50";
 
   return (
     <div
@@ -108,7 +102,7 @@ export const MemberCardRow = memo(function MemberCardRow({
         "focus-visible:ring-2 focus-visible:ring-ring",
         dead ? "border-deceased/60 grayscale" : "border-primary",
         selected ? "ring-4 ring-primary/30" : "",
-        match   ? "ring-4 ring-warning"      : "",
+        match ? "ring-4 ring-warning" : "",
       ].join(" ")}
     >
       {/* Left gender/status colour strip */}
@@ -162,10 +156,7 @@ export const MemberCardRow = memo(function MemberCardRow({
 
         {/* Row 2: lifespan + generation dot */}
         <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span
-            className="size-2 shrink-0 rounded-full"
-            style={{ background: genVar(gen) }}
-          />
+          <span className="size-2 shrink-0 rounded-full" style={{ background: genVar(gen) }} />
           <span className="tabular-nums">
             {m.birthYear ?? "?"} – {m.deathYear ?? t("present")}
           </span>

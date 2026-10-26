@@ -63,11 +63,13 @@ describe("buildMemberBoard", () => {
     const members = makeSeed();
     const columns = buildMemberBoard(members, analyze(members));
 
-    expect(columns[2]!.groups.map((group) => ({
-      kind: group.kind,
-      members: ids(group.members),
-      parentIds: group.parentIds,
-    }))).toEqual([
+    expect(
+      columns[2]!.groups.map((group) => ({
+        kind: group.kind,
+        members: ids(group.members),
+        parentIds: group.parentIds,
+      })),
+    ).toEqual([
       {
         kind: "siblings",
         members: ["m7", "m8", "m9", "m15", "m16", "m17", "m18", "m19"],
@@ -93,7 +95,9 @@ describe("buildMemberBoard", () => {
     ]);
     expect(parents.groups.every((group) => group.kind === "couple")).toBe(true);
     expect(new Set(parents.groups.map((group) => group.id)).size).toBe(2);
-    expect(parents.groups.flatMap((group) => ids(group.members)).filter((id) => id === "p")).toHaveLength(2);
+    expect(
+      parents.groups.flatMap((group) => ids(group.members)).filter((id) => id === "p"),
+    ).toHaveLength(2);
     expectComplete(columns, multipleMarriages);
   });
 
@@ -102,11 +106,13 @@ describe("buildMemberBoard", () => {
     const children = columns[1]!;
 
     expect(children.generation).toBe(2);
-    expect(children.groups.map((group) => ({
-      kind: group.kind,
-      members: ids(group.members),
-      parentIds: group.parentIds,
-    }))).toEqual([
+    expect(
+      children.groups.map((group) => ({
+        kind: group.kind,
+        members: ids(group.members),
+        parentIds: group.parentIds,
+      })),
+    ).toEqual([
       { kind: "siblings", members: ["c1", "c2"], parentIds: ["p", "s1"] },
       { kind: "siblings", members: ["c3", "c4"], parentIds: ["p", "s2"] },
     ]);
@@ -207,7 +213,9 @@ describe("buildMemberBoard", () => {
     const columns = buildMemberBoard(members, analyze(members));
 
     expect(columns.map((column) => column.members.length)).toEqual([3, 2]);
-    expect(columns[0]!.groups.map((group) => ({ kind: group.kind, members: ids(group.members) }))).toEqual([
+    expect(
+      columns[0]!.groups.map((group) => ({ kind: group.kind, members: ids(group.members) })),
+    ).toEqual([
       { kind: "individual", members: ["p"] },
       { kind: "individual", members: ["isolated"] },
       { kind: "individual", members: ["unknown"] },
@@ -225,12 +233,28 @@ describe("buildMemberBoard", () => {
 
     expect(columns[0]!.generation).toBe(1);
     expect(ids(columns[0]!.members)).toEqual(["p", "unassigned"]);
-    expect(columns[0]!.groups.find((group) => ids(group.members).includes("unassigned"))).toMatchObject({
+    expect(
+      columns[0]!.groups.find((group) => ids(group.members).includes("unassigned")),
+    ).toMatchObject({
       kind: "individual",
       members: [unassigned],
       parentIds: [],
     });
     expectComplete(columns, members);
+  });
+
+  it("lists siblings in a sibling group from eldest to youngest", () => {
+    const members: Member[] = [
+      { id: "p", name: "Parent", gender: "male" },
+      { id: "youngest", name: "Youngest", gender: "male", birthYear: 2010, parentIds: ["p"] },
+      { id: "eldest", name: "Eldest", gender: "female", birthYear: 1990, parentIds: ["p"] },
+      { id: "middle", name: "Middle", gender: "male", birthYear: 2000, parentIds: ["p"] },
+    ];
+
+    const columns = buildMemberBoard(members, analyze(members));
+    const group = columns[1]!.groups.find((entry) => entry.kind === "siblings");
+
+    expect(ids(group!.members)).toEqual(["eldest", "middle", "youngest"]);
   });
 
   it("returns no columns for empty input", () => {
@@ -242,7 +266,7 @@ describe("buildMemberBoard", () => {
     const members: Member[] = Array.from({ length: 10 }, (_, index) => ({
       id: `g${index + 1}`,
       name: `Generation ${index + 1}`,
-      gender: "male",
+      gender: "male" as const,
       parentIds: index > 0 ? [`g${index}`] : [],
     })).reverse();
 
@@ -250,7 +274,16 @@ describe("buildMemberBoard", () => {
 
     expect(columns.map((column) => column.generation)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     expect(columns.map((column) => ids(column.members))).toEqual([
-      ["g1"], ["g2"], ["g3"], ["g4"], ["g5"], ["g6"], ["g7"], ["g8"], ["g9"], ["g10"],
+      ["g1"],
+      ["g2"],
+      ["g3"],
+      ["g4"],
+      ["g5"],
+      ["g6"],
+      ["g7"],
+      ["g8"],
+      ["g9"],
+      ["g10"],
     ]);
     expectComplete(columns, members);
   });

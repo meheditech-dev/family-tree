@@ -1,7 +1,24 @@
 import { useRef } from "react";
 import { Link } from "@tanstack/react-router";
-import { Plus, Crosshair, Search, Minus, Maximize, SlidersHorizontal, Sprout, UsersRound, X } from "lucide-react";
-import { clearFamilyFocus, getState, setSettings, setUI, startNewFamily, useStore } from "@/lib/tree/store";
+import {
+  Plus,
+  Crosshair,
+  Search,
+  Minus,
+  Maximize,
+  SlidersHorizontal,
+  Sprout,
+  UsersRound,
+  X,
+} from "lucide-react";
+import {
+  clearFamilyFocus,
+  getState,
+  setSettings,
+  setUI,
+  startNewFamily,
+  useStore,
+} from "@/lib/tree/store";
 import { useT } from "@/lib/tree/i18n";
 import type { TreeLayout } from "@/lib/tree/types";
 import { TreeCanvas, ZMAX, ZMIN } from "@/components/tree/TreeCanvas";
@@ -30,8 +47,10 @@ export function TreePage() {
     if (m) setUI({ selectedId: m.id, center: { id: m.id, n: Date.now() } });
     else (document.querySelector("header input") as HTMLInputElement | null)?.focus();
   };
-  const z = (d: number) => setSettings({ zoom: Math.min(ZMAX, Math.max(ZMIN, +(zoom + d).toFixed(2))) });
-  const btn = "flex items-center gap-2 rounded-full border bg-card px-4 py-2 text-sm hover:bg-muted";
+  const z = (d: number) =>
+    setSettings({ zoom: Math.min(ZMAX, Math.max(ZMIN, +(zoom + d).toFixed(2))) });
+  const btn =
+    "flex items-center gap-2 rounded-full border bg-card px-4 py-2 text-sm hover:bg-muted";
 
   return (
     <div className="flex h-full flex-col">
@@ -61,7 +80,8 @@ export function TreePage() {
             <option value={0}>{t("allGen")}</option>
             {[1, 2, 3, 4].map((g) => (
               <option key={g} value={g}>
-                {t("generation")} {g}{g === 4 ? "+" : ""}
+                {t("generation")} {g}
+                {g === 4 ? "+" : ""}
               </option>
             ))}
           </select>
@@ -144,7 +164,10 @@ export function TreePage() {
           >
             <Minus className="size-4" />
           </button>
-          <button onClick={() => setSettings({ zoom: 1 })} className="w-12 text-center text-xs font-semibold">
+          <button
+            onClick={() => setSettings({ zoom: 1 })}
+            className="w-12 text-center text-xs font-semibold"
+          >
             {Math.round(zoom * 100)}%
           </button>
           <button
@@ -156,7 +179,11 @@ export function TreePage() {
           </button>
           <button
             aria-label={t("fullscreen")}
-            onClick={() => (document.fullscreenElement ? document.exitFullscreen() : ref.current?.parentElement?.requestFullscreen())}
+            onClick={() =>
+              document.fullscreenElement
+                ? document.exitFullscreen()
+                : ref.current?.parentElement?.requestFullscreen()
+            }
             className="grid size-8 place-items-center rounded-full hover:bg-muted"
           >
             <Maximize className="size-4" />
